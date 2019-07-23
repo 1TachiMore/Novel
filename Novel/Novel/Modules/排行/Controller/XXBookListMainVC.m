@@ -14,30 +14,34 @@
 
 @implementation XXBookListMainVC
 
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.titleSizeNormal = 14;
+        self.titleSizeSelected = 16;
+        self.titleColorNormal = knormalColor;
+        self.titleColorSelected = knormalColor;
+        self.automaticallyCalculatesItemWidths = YES;
+        self.menuViewStyle = WMMenuViewStyleLine;
+        self.menuViewLayoutMode = WMMenuViewLayoutModeScatter;
+        self.preloadPolicy = WMPageControllerPreloadPolicyNear;
+    }
+    return self;
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    
-    //关闭预加载
-    self.preloadPolicy = WMPageControllerPreloadPolicyNever;
-    
-    self.titleSizeNormal = 14;
-    self.titleSizeSelected = 16;
-    self.titleColorNormal = knormalColor;
-    self.titleColorSelected = knormalColor;
-    self.menuItemWidth = self.view.width / 3;
-    self.automaticallyCalculatesItemWidths = YES;
-    self.menuViewStyle = WMMenuViewStyleLine;
-    self.menuViewLayoutMode = WMMenuViewLayoutModeCenter;
-    
-    [self addBackItem];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
 }
+
 
 - (NSInteger)numbersOfChildControllersInPageController:(WMPageController *)pageController {
     return 3;
 }
+
 
 - (NSString *)pageController:(WMPageController *)pageController titleAtIndex:(NSInteger)index {
     switch (index % 3) {
@@ -48,43 +52,40 @@
     return @"NONE";
 }
 
+
 - (UIViewController *)pageController:(WMPageController *)pageController viewControllerAtIndex:(NSInteger)index {
-    
-    XXBookListVC *vc = [[XXBookListVC alloc] init];
-    vc.booklist_type = _booklist_type;
-    
+    NSString *id = @"";
     switch (index % 3) {
         case 0:
-            vc.title = @"周榜";
-            vc.id = _id;
+            id = _id;
             break;
             
         case 1:
-            vc.title = @"月榜";
-            vc.id = _monthRank;
+            id = _monthRank;
             break;
             
         case 2:
-            vc.title = @"总榜";
-            vc.id = _totalRank;
+            id = _totalRank;
             break;
-            
         default:
             break;
     }
-    
+    XXBookListVC *vc = [[XXBookListVC alloc] initWithType:_booklist_type id:id];
     return vc;
 }
 
+
 - (CGRect)pageController:(WMPageController *)pageController preferredFrameForMenuView:(WMMenuView *)menuView {
     menuView.backgroundColor = UIColorHex(#ecf0f6);
-    return CGRectMake(0, 0, self.view.width, xxAdaWidth(40));
+    return CGRectMake(0, 0, self.view.width, AdaWidth(40));
 }
+
 
 - (CGRect)pageController:(WMPageController *)pageController preferredFrameForContentView:(WMScrollView *)contentView {
     CGFloat originY = CGRectGetMaxY([self pageController:pageController preferredFrameForMenuView:self.menuView]);
     return CGRectMake(0, originY, self.view.width, self.view.height - originY);
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

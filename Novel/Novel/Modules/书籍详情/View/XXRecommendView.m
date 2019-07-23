@@ -39,7 +39,7 @@ static NSString *const footerId = @"RecommendViewFooterID";
         //每个cell格子的宽高
         customLaout.itemSize = CGSizeMake(kRecomentItemW, kRecomentItemH);
         
-        customLaout.minimumLineSpacing = xxAdaWidth(10); //行间距
+        customLaout.minimumLineSpacing = AdaWidth(10); //行间距
         customLaout.minimumInteritemSpacing = 0; //列间距
         
         //滚动方向

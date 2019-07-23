@@ -7,11 +7,12 @@
 //
 
 #import "BaseModel.h"
+@class BooksListItemModel;
 
 @interface BooksListModel : BaseModel
 
 /** BooksListItemModel的数组 */
-@property (nonatomic, strong) NSArray *books;
+@property (nonatomic, strong) NSArray <BooksListItemModel *>*books;
 
 @property (nonatomic, copy) NSString *_id;
 
@@ -34,7 +35,7 @@
 
 @property (nonatomic, assign) BOOL collapse;
 
-@property (nonatomic, assign) BOOL new;
+//@property (nonatomic, assign) BOOL new;
 
 @property (nonatomic, copy) NSString *gender;
 

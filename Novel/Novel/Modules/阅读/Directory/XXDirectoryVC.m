@@ -57,7 +57,7 @@
     [self.view addSubview:self.tableView];
     
     CGFloat topHeight = NavigationBar_HEIGHT + kAppDelegate.statusBarHeight;
-    CGFloat bottomHeight = xxAdaWidth(44);
+    CGFloat bottomHeight = AdaWidth(44);
     
     self.tableView.backgroundColor = [UIColor colorWithRed:0.85 green:0.85 blue:0.85 alpha:1.00];
     
@@ -70,12 +70,12 @@
     [self.view addSubview:_bottomView];
     
     //到底/定部按钮
-    _rightButton = [UIButton newButtonTitle:@"" font:14 normarlColor:kwhiteColor];
+    _rightButton = [UIButton newButtonTitle:@"" font:fontSize(14) normarlColor:kwhiteColor];
     [_rightButton addTarget:self action:@selector(scrollToTopOrBottom) forControlEvents:UIControlEventTouchDown];
     [_topView addSubview:_rightButton];
     
     //标题
-    UILabel *titleLabel = [UILabel newLabel:kReadingManager.title andTextColor:kwhiteColor andFontSize:16];
+    UILabel *titleLabel = [UILabel newLabel:kReadingManager.title andTextColor:kwhiteColor andFont:fontSize(16)];
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [_topView addSubview:titleLabel];
     
@@ -95,28 +95,28 @@
     }];
     
     [_bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.bottom.mas_equalTo(self.view.mas_bottom);
+        make.bottom.mas_equalTo(self.view.mas_bottom).offset(0);
         make.left.right.mas_equalTo(self.view);
-        make.height.mas_equalTo(bottomHeight);
+        make.height.mas_equalTo(bottomHeight + kSafeAreaInsets.safeAreaInsets.bottom);
     }];
     
     [_rightButton mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.topView.mas_top).offset(kAppDelegate.statusBarHeight);
-        make.right.mas_equalTo(_topView.mas_right).offset(-kCellX);
+        make.right.mas_equalTo(_topView.mas_right).offset(-AdaWidth(12.f));
         make.size.mas_equalTo(CGSizeMake(NavigationBar_HEIGHT, NavigationBar_HEIGHT));
     }];
     
     [titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_rightButton);
-        make.left.mas_equalTo(_topView.mas_left).offset(kCellX*2 + NavigationBar_HEIGHT);
-        make.right.mas_equalTo(_rightButton.mas_left).offset(-kCellX);
+        make.left.mas_equalTo(_topView.mas_left).offset(AdaWidth(12.f)*2 + NavigationBar_HEIGHT);
+        make.right.mas_equalTo(_rightButton.mas_left).offset(-AdaWidth(12.f));
         make.height.mas_equalTo(NavigationBar_HEIGHT);
     }];
     
     [cancelButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.center.equalTo(_bottomView);
-        make.height.mas_equalTo(_bottomView.mas_height);
-        make.width.mas_equalTo(_bottomView.mas_height);
+        make.top.mas_equalTo(self.bottomView.mas_top).offset(0);
+        make.centerX.equalTo(@0);
+        make.height.width.mas_equalTo(bottomHeight);
     }];
     
     [self.tableView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -143,10 +143,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-
-    return [tableView fd_heightForCellWithIdentifier:NSStringFromClass([XXDirectoryCell class]) cacheByIndexPath:indexPath configuration:^(id cell) {
-        [cell configTitle:((BookChapterModel *)kReadingManager.chapters[indexPath.row]).title indexPath:indexPath];
-    }];
+    return 44;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
@@ -156,7 +153,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 
     XXDirectoryCell *cell = [tableView dequeueReusableCellWithIdentifier:NSStringFromClass([XXDirectoryCell class])];
-    [cell configTitle:((BookChapterModel *)kReadingManager.chapters[indexPath.row]).title indexPath:indexPath];
+    [cell configTitle:((XXBookChapterModel *)kReadingManager.chapters[indexPath.row]).title indexPath:indexPath];
     return cell;
 }
 
@@ -172,9 +169,10 @@
 }
 
 - (void)scrollToCurrentRow {
-    
-    NSIndexPath *idxPath = [NSIndexPath indexPathForRow:kReadingManager.chapter inSection:0];;
-    [self.tableView scrollToRowAtIndexPath:idxPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+    if (kReadingManager.chapters.count > kReadingManager.chapter) {
+        NSIndexPath *idxPath = [NSIndexPath indexPathForRow:kReadingManager.chapter inSection:0];;
+        [self.tableView scrollToRowAtIndexPath:idxPath atScrollPosition:UITableViewScrollPositionMiddle animated:YES];
+    }
 }
 
 - (void)cancelAction {

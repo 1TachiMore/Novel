@@ -6,11 +6,14 @@
 //  Copyright © 2018年 th. All rights reserved.
 //
 
-#define kLeftX xxAdaWidth(20.f)
+#define kLeftX AdaWidth(20.f)
 
 #import "XXBookDetailView.h"
 #import "BookDetailModel.h"
 #import <TTGTagCollectionView/TTGTextTagCollectionView.h>
+#import "XXDatabase.h"
+#import "XXBookModel.h"
+
 
 @interface XXBookDetailView()
 
@@ -80,13 +83,13 @@
     _introView = [[UIView alloc] init];
     [self.contentView addSubview:_introView];
     
-    _titleLabel = [UILabel newLabel:@"" andTextColor:kblackColor andFontSize:16];
+    _titleLabel = [UILabel newLabel:@"" andTextColor:kblackColor andFont:fontSize(16)];
     [_introView addSubview:_titleLabel];
     
     _authorLabel = [[UILabel alloc] init];
     [_introView addSubview:_authorLabel];
     
-    _updateLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFontSize:12];
+    _updateLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFont:fontSize(12)];
     [_introView addSubview:_updateLabel];
     
 //    _afterBtn = [XXHighLightButton newButtonTitle:@"+ 追更新" font:15 normarlColor:knormalColor];
@@ -94,13 +97,13 @@
     [_afterBtn setTitle:@"+ 追更新" forState:0];
     _afterBtn.titleLabel.font = fontSize(15);
     [_afterBtn setTitleColor:knormalColor forState:0];
-    _afterBtn.layer.cornerRadius = xxAdaWidth(5);
+    _afterBtn.layer.cornerRadius = AdaWidth(5);
     _afterBtn.layer.borderWidth = klineHeight;
     _afterBtn.layer.borderColor = [UIColor colorWithRed:0.36 green:0.27 blue:0.34 alpha:1.00].CGColor;
     [self.contentView addSubview:_afterBtn];
     
-    _readingBtn = [XXHighLightButton newButtonTitle:@"开始阅读" font:16 normarlColor:kwhiteColor];
-    _readingBtn.layer.cornerRadius = xxAdaWidth(5);
+    _readingBtn = [XXHighLightButton newButtonTitle:@"开始阅读" font:fontSize(16) normarlColor:kwhiteColor];
+    _readingBtn.layer.cornerRadius = AdaWidth(5);
     _readingBtn.layer.borderWidth = klineHeight;
     _readingBtn.backgroundColor = [UIColor colorWithRed:0.36 green:0.27 blue:0.34 alpha:1.00];
     [self.contentView addSubview:_readingBtn];
@@ -108,32 +111,32 @@
     _topLine = [UIView newLine];
     [self.contentView addSubview:_topLine];
     
-    _followerLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFontSize:15];
+    _followerLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFont:fontSize(15)];
     _followerLabel.textAlignment = NSTextAlignmentCenter;
     [self.contentView addSubview:_followerLabel];
     
-    _retentionLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFontSize:15];
+    _retentionLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFont:fontSize(15)];
     _retentionLabel.textAlignment = NSTextAlignmentCenter;
     [self.contentView addSubview:_retentionLabel];
     
-    _countLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFontSize:15];
+    _countLabel = [UILabel newLabel:@"暂无数据" andTextColor:kgrayColor andFont:fontSize(15)];
     _countLabel.textAlignment = NSTextAlignmentCenter;
     [self.contentView addSubview:_countLabel];
     
     _tagsView = [[TTGTextTagCollectionView alloc] init];
     [self.contentView addSubview:_tagsView];
     
-    _shortLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:13];
+    _shortLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(13)];
     _shortLabel.numberOfLines = 0;
     [self.contentView addSubview:_shortLabel];
     
     _bottomLine = [UIView newLine];
     [self.contentView addSubview:_bottomLine];
     
-    _interestLabel = [UILabel newLabel:@"你可能感兴趣" andTextColor:kblackColor andFontSize:14];
+    _interestLabel = [UILabel newLabel:@"你可能感兴趣" andTextColor:kblackColor andFont:fontSize(14)];
     [self.contentView addSubview:_interestLabel];
     
-    _moreBtn = [UIButton newButtonTitle:@"更多" font:14 normarlColor:kgrayColor];
+    _moreBtn = [UIButton newButtonTitle:@"更多" font:fontSize(14) normarlColor:kgrayColor];
     [self.contentView addSubview:_moreBtn];
     
     _recommendView = [[XXRecommendView alloc] init];
@@ -143,12 +146,12 @@
 
 - (void)setupLayout {
     
-    CGFloat introverSpace = xxAdaWidth(6);
+    CGFloat introverSpace = AdaWidth(6);
     
     [_coverView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.contentView.mas_top).offset(kLeftX);
         make.left.mas_equalTo(self.contentView.mas_left).offset(kLeftX);
-        make.size.mas_equalTo(CGSizeMake(xxAdaWidth(60), xxAdaWidth(80)));
+        make.size.mas_equalTo(CGSizeMake(AdaWidth(60), AdaWidth(80)));
     }];
     
     [_introView mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -176,7 +179,7 @@
         make.top.mas_equalTo(_coverView.mas_bottom).offset(kLeftX);
         make.left.mas_equalTo(self.contentView.mas_left).offset(kLeftX);
         make.width.mas_equalTo(self.contentView.mas_width).multipliedBy(0.5).offset(-kLeftX-kLeftX*0.5);
-        make.height.mas_equalTo(xxAdaWidth(50));
+        make.height.mas_equalTo(AdaWidth(50));
     }];
     
     [_readingBtn mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -186,9 +189,9 @@
     }];
     
     [_topLine mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_afterBtn.mas_bottom).offset(xxAdaWidth(30));
+        make.top.mas_equalTo(_afterBtn.mas_bottom).offset(AdaWidth(30));
         make.left.right.equalTo(self.contentView);
-        make.height.mas_equalTo(xxAdaWidth(10));
+        make.height.mas_equalTo(AdaWidth(10));
     }];
     
     UIView *tempView = nil;
@@ -198,7 +201,7 @@
         UIView *view = [[UIView alloc] init];
         [self.contentView addSubview:view];
         
-        UILabel *titleLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFontSize:15];
+        UILabel *titleLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFont:fontSize(15)];
         titleLabel.textAlignment = NSTextAlignmentCenter;
         [view addSubview:titleLabel];
         
@@ -220,7 +223,7 @@
             [view addSubview:_followerLabel];
             
             [_followerLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.top.mas_equalTo(titleLabel.mas_bottom).offset(xxAdaWidth(6));
+                make.top.mas_equalTo(titleLabel.mas_bottom).offset(AdaWidth(6));
                 make.left.right.equalTo(view);
             }];
             
@@ -230,7 +233,7 @@
             
             [view addSubview:_retentionLabel];
             [_retentionLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.top.mas_equalTo(titleLabel.mas_bottom).offset(xxAdaWidth(6));
+                make.top.mas_equalTo(titleLabel.mas_bottom).offset(AdaWidth(6));
                 make.left.right.equalTo(view);
             }];
             
@@ -240,7 +243,7 @@
             
             [view addSubview:_countLabel];
             [_countLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-                make.top.mas_equalTo(titleLabel.mas_bottom).offset(xxAdaWidth(6));
+                make.top.mas_equalTo(titleLabel.mas_bottom).offset(AdaWidth(6));
                 make.left.right.equalTo(view);
             }];
         }
@@ -263,7 +266,7 @@
     }];
     
     [_tagsView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(line_1.mas_bottom).offset(kCellX);
+        make.top.mas_equalTo(line_1.mas_bottom).offset(AdaWidth(12.f));
         make.left.right.equalTo(line_1);
     }];
     
@@ -271,20 +274,20 @@
     [self.contentView addSubview:line_2];
     
     [line_2 mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_tagsView.mas_bottom).offset(kCellX);
+        make.top.mas_equalTo(_tagsView.mas_bottom).offset(AdaWidth(12.f));
         make.left.right.equalTo(line_1);
         make.height.mas_equalTo(klineHeight);
     }];
     
     [_shortLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(line_2.mas_bottom).offset(kCellX);
+        make.top.mas_equalTo(line_2.mas_bottom).offset(AdaWidth(12.f));
         make.left.right.equalTo(line_2);
     }];
     
     [_bottomLine mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_shortLabel.mas_bottom).offset(xxAdaWidth(8));
+        make.top.mas_equalTo(_shortLabel.mas_bottom).offset(AdaWidth(8));
         make.left.right.equalTo(self.contentView);
-        make.height.mas_equalTo(xxAdaWidth(10));
+        make.height.mas_equalTo(AdaWidth(10));
     }];
     
     [_interestLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -299,7 +302,7 @@
     [_moreBtn setEnlargeEdgeWithTop:kLeftX right:kLeftX bottom:kLeftX left:kLeftX];
     
     [_recommendView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_interestLabel.mas_bottom).offset(kCellX);
+        make.top.mas_equalTo(_interestLabel.mas_bottom).offset(AdaWidth(12.f));
         make.left.right.equalTo(line_2);
         make.height.mas_equalTo(kRecomentItemH);
         make.bottom.equalTo(self.contentView).offset(-kLeftX);
@@ -311,15 +314,15 @@
 - (void)configTag {
     
     TTGTextTagConfig *textConfig = [[TTGTextTagConfig alloc] init];
-    textConfig.tagTextFont = fontSize(14);
-    textConfig.tagTextColor = kwhiteColor;
-    textConfig.tagCornerRadius = xxAdaWidth(5);
-    textConfig.tagSelectedCornerRadius = xxAdaWidth(5);
-    textConfig.tagBorderWidth = 0;
-    textConfig.tagSelectedBorderWidth = 0;
-    textConfig.tagShadowColor = kclearColor;
+    textConfig.textFont = fontSize(14);
+    textConfig.textColor = kwhiteColor;
+    textConfig.cornerRadius = AdaWidth(5);
+    textConfig.selectedCornerRadius = AdaWidth(5);
+    textConfig.borderWidth = 0;
+    textConfig.selectedBorderWidth = 0;
+    textConfig.shadowColor = kclearColor;
     
-    textConfig.tagExtraSpace = CGSizeMake(xxAdaWidth(15), xxAdaWidth(10));
+    textConfig.extraSpace = CGSizeMake(AdaWidth(15), AdaWidth(10));
     
     _tagsView.defaultConfig = textConfig;
     
@@ -329,9 +332,9 @@
     _tagsView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
     
     //间距
-    _tagsView.horizontalSpacing = xxAdaWidth(15);
+    _tagsView.horizontalSpacing = AdaWidth(15);
     
-    _tagsView.verticalSpacing = xxAdaHeight(10);
+    _tagsView.verticalSpacing = AdaHeight(10);
     
     _tagsView.alignment = TTGTagCollectionAlignmentLeft;
     _tagsView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -344,7 +347,7 @@
     
     for (int i = 0; i < _model.tags.count; i++) {
         
-        textConfig.tagBackgroundColor = self.colors[i];
+        textConfig.backgroundColor = self.colors[i];
         
         [_tagsView addTags:[_model.tags subarrayWithRange:NSMakeRange(location, length)] withConfig:[textConfig copy]];
         location += length;
@@ -355,24 +358,23 @@
 
 - (void)configEvent {
     
-    xxWeakify(self)
+    MJWeakSelf;
 
     [[_afterBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-
-        [weakself afterAction];
+        [weakSelf afterAction];
     }];
     
     [[_readingBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
         
-        if (weakself.didClickDelegate) {
-            [weakself.didClickDelegate sendNext:[NSNumber numberWithInteger:kBookDetailType_read]];
+        if (weakSelf.didClickDelegate) {
+            [weakSelf.didClickDelegate sendNext:[NSNumber numberWithInteger:kBookDetailType_read]];
         }
     }];
     
     [[_moreBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
         
-        if (weakself.didClickDelegate) {
-            [weakself.didClickDelegate sendNext:[NSNumber numberWithInteger:kBookDetailType_recommendMore]];
+        if (weakSelf.didClickDelegate) {
+            [weakSelf.didClickDelegate sendNext:[NSNumber numberWithInteger:kBookDetailType_recommendMore]];
         }
     }];
     
@@ -381,8 +383,8 @@
     [_recommendView.delegate subscribeNext:^(id  _Nullable x) {
         
         BooksListItemModel *md = x;
-        if (weakself.didClickDelegate) {
-            [weakself.didClickDelegate sendNext:md];
+        if (weakSelf.didClickDelegate) {
+            [weakSelf.didClickDelegate sendNext:md];
         }
     }];
 }
@@ -391,72 +393,68 @@
 - (void)afterAction {
     //    加入书架，包含id,coverURL,title, lastChapter, updated, chapter，page
     
-    BOOL res = [SQLiteTool isTableOK:self.model._id];
-    
-    if (res) {
+    XXBookModel *dbModel = [kDatabase getBookWithId:self.model._id];
+    if (dbModel) {
         //存在，则删除
-        [SQLiteTool deleteTableName:self.model._id indatabasePath:kShelfPath];
-        
-        [self.afterBtn setTitle:@"+ 追更新" forState:UIControlStateNormal];
-        [self.readingBtn setTitle:@"开始阅读" forState:UIControlStateNormal];
-        
+        if ([kDatabase deleteBookWithId:self.model._id]) {
+            [self.afterBtn setTitle:@"+ 追更新" forState:UIControlStateNormal];
+            [self.readingBtn setTitle:@"开始阅读" forState:UIControlStateNormal];
+        }
+        else {
+            [HUD showError:@"删除失败" inview:self];
+        }
     } else {
         //不存在，则添加
-        BookShelfModel *model = [BookShelfModel new];
+        XXBookModel *model = [[XXBookModel alloc] init];
         model.id = self.model._id;
-        model.coverURL = NSStringFormat(@"%@%@",statics_URL,self.model.cover);
+        model.coverURL = NSStringFormat(@"%@%@", statics_URL, self.model.cover);
         model.title = self.model.title;
         model.lastChapter = self.model.lastChapter;
         model.updated = self.model.updated;
-        model.status = @"1";
-        model.chapter = @"0";
-        model.page = @"0";
+        model.updateStatus = YES;
+        model.chapter = 0;
+        model.page = 0;
         model.summaryId = @"";
         
-        [SQLiteTool addShelfWithModel:model];
+        [kDatabase insertBook:model];
         
         [self.afterBtn setTitle:@"- 不追了" forState:UIControlStateNormal];
     }
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"reloadBookShelf" object:nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:kReloadBookShelfNotification object:nil];
 }
 
 - (void)configWithModel:(id)model {
     if ([model isKindOfClass:[BookDetailModel class]]) {
         
-        [self removeEmpty];
-        
         _model = model;
         
         self.contentView.hidden = NO;
         
-        BOOL res = [SQLiteTool isTableOK:_model._id];
+        XXBookModel *dbModel = [kDatabase getBookWithId:self.model._id];
         
-        if (res) {
+        if (dbModel) {
             [_afterBtn setTitle:@"- 不追了" forState:UIControlStateNormal];
-            
-            BookShelfModel *shelfModel = [SQLiteTool getBookWithTableName:_model._id];
-            
-            if ([shelfModel.chapter integerValue] > 0 || [shelfModel.page integerValue] > 0) {
+            if (dbModel.chapter > 0 || dbModel.page > 0) {
                 [_readingBtn setTitle:@"继续阅读" forState:UIControlStateNormal];
             }
         }
         
-        [_coverView pin_setImageFromURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", statics_URL, _model.cover]] placeholderImage:UIImageWithName(@"default_book_cover")];
+        [_coverView sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", statics_URL, _model.cover]] placeholderImage:UIImageName(@"default_book_cover")];
         
         _titleLabel.text = _model.title;
         
         NSString *str = [NSString stringWithFormat:@"%@ | %@ | %@", _model.author, _model.cat, [_model getBookWordCount]];
         
         NSMutableAttributedString *titleAttri = [[NSMutableAttributedString alloc] initWithString:str];
-        titleAttri.font = fontSize(14);
-        titleAttri.color = kgrayColor;
-        [titleAttri setColor:[UIColor colorWithRed:0.71 green:0.13 blue:0.13 alpha:1.00] range:NSMakeRange(0, _model.author.length)];
+        titleAttri.yy_font = fontSize(14);
+        titleAttri.yy_color = kgrayColor;
+        [titleAttri yy_setColor:[UIColor colorWithRed:0.71 green:0.13 blue:0.13 alpha:1.00] range:NSMakeRange(0, _model.author.length)];
         
         _authorLabel.attributedText = titleAttri;
         
         if (_model.isSerial) {
-            _updateLabel.text = [[[DateTools shareDate] getUpdateStringWith:[DateTools dateFromString:_model.updated dateformatter:kCustomDateFormat]] stringByAppendingString:@"更新"];
+            _updateLabel.text = [[[DateTools shareDate] getUpdateStringWithDate:[DateTools dateFromString:_model.updated dateformatter:kCustomDateFormat]] stringByAppendingString:@"更新"];
         } else {
             _updateLabel.text = @"已完结";
         }
@@ -473,17 +471,19 @@
         [self configTag];
         
         NSMutableAttributedString *shortAtt = [[NSMutableAttributedString alloc] initWithString:_model.longIntro];
-        shortAtt.font = fontSize(13);
-        shortAtt.color = knormalColor;
-        shortAtt.lineSpacing = xxAdaWidth(3);
+        shortAtt.yy_font = fontSize(13);
+        shortAtt.yy_color = knormalColor;
+        shortAtt.yy_lineSpacing = AdaWidth(3);
         
         _shortLabel.attributedText = shortAtt;
     }
 }
 
+
 - (void)configRecommendDatas:(NSArray *)datas {
     [self.recommendView configDatas:datas];
 }
+
 
 - (void)dealloc {
     [_didClickDelegate sendCompleted];

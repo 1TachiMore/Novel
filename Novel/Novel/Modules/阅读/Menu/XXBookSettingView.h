@@ -12,11 +12,14 @@
 
 
 /**
- 设置颜色选择
+ 设置白天背景颜色
 
- @param index <#index description#>
+ @param bgColor <#bgColor description#>
  */
-- (void)refreshColorSeleted:(NSUInteger)index;
+- (void)changeLightbgColorSeleted:(kBgColor)bgColor;
+
+- (void)changeNight;
+
 
 /** 字体缩小 */
 @property (nonatomic, copy) void(^changeSmallerFontBlock)();
@@ -26,5 +29,8 @@
 
 /** 横竖屏切换 */
 //@property (nonatomic, copy) void(^landspaceBlock)();
+
+/** 更多设置 */
+@property (nonatomic, copy) void(^moreSettingBlock)();
 
 @end

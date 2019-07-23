@@ -7,11 +7,20 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "BookChapterModel.h"
 #import "SummaryModel.h"
 #import "XXChaptersApi.h"
 #import "XXSummaryApi.h"
 #import "XXBookContentApi.h"
+#import "XXBookChapterModel.h"
+
+//小说内容据屏幕左右边的距离
+#define kReadSpaceX 20
+
+#define kReadingTopH 40
+
+#define kReadingBottomH 35
+
+#define kReadingFrame CGRectMake(kReadSpaceX, kReadingTopH, kScreenWidth - kReadSpaceX*2, kScreenHeight - kReadingTopH - kReadingBottomH - kSafeAreaInsets.safeAreaInsets.top - kSafeAreaInsets.safeAreaInsets.bottom)
 
 #define kReadingManager [ReadingManager shareReadingManager]
 
@@ -21,7 +30,7 @@
 + (instancetype)shareReadingManager;
 
 /** 目录数组 */
-@property (nonatomic, strong) NSArray *chapters;
+@property (nonatomic, strong) NSArray <XXBookChapterModel *>*chapters;
 
 /** 小说title */
 @property (nonatomic, copy) NSString *title;
@@ -41,14 +50,20 @@
 /** 小说字体大小 */
 @property (nonatomic, assign) NSUInteger font;
 
-/** 0-白色 1-黄色 2-淡绿色 3-淡黄色 4-淡紫色 5-黑色 */
-@property (nonatomic, assign) NSUInteger bgColor;
+@property (nonatomic, assign) kBgColor bgColor;
 
-/** 在applicationDidEnterBackground程序退出时判断是否需要存储 */
-@property (nonatomic, assign) BOOL isSave;
+@property (nonatomic, assign) kDayMode dayMode;
+
+/* 点击全屏翻下页 */
+@property (nonatomic, assign) BOOL isFullTapNext;
+
+/* 过渡样式 */
+@property (nonatomic, assign) kTransitionStyle transitionStyle;
 
 /** 预下载n章 */
 @property (nonatomic, assign) NSUInteger downlownNumber;
+
+@property (nonatomic, assign) BOOL isSave;
 
 - (void)clear;
 
@@ -67,7 +82,7 @@
  @param completion <#completion description#>
  @param failure <#failure description#>
  */
-- (void)requestChaptersCompletion:(void(^)())completion failure:(void(^)(NSString *error))failure;
+- (void)requestChaptersWithUseCache:(BOOL)userCache completion:(void(^)())completion failure:(void(^)(NSString *error))failure;
 
 
 /**
@@ -86,6 +101,18 @@
 
  @param allowLandscape <#allowLandscape description#>
  */
-//- (void)allowLandscapeRight:(BOOL)allowLandscape;
+- (void)allowLandscapeRight:(BOOL)allowLandscape;
+
+
+//画出某章节某页的范围
+- (void)pagingWithBounds:(CGRect)bounds withFont:(UIFont *)font andChapter:(XXBookChapterModel *)model;
+
+
+//获取某章节某一页的内容
+- (NSAttributedString *)getStringWithpage:(NSInteger)page andChapter:(XXBookChapterModel *)model;
+
+
+// 换行\t制表符，缩进 
+- (NSString *)adjustParagraphFormat:(NSString *)string;
 
 @end

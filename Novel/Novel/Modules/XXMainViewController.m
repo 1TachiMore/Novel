@@ -11,47 +11,53 @@
 #import "XXRankingVC.h"
 #import "XXSearchVC.h"
 
-@interface XXMainViewController ()
+@interface XXMainViewController () <WMPageControllerDelegate>
 
 @end
 
 @implementation XXMainViewController
 
+
+- (instancetype)init {
+    self = [super init];
+    if (self) {
+        self.preloadPolicy = WMPageControllerPreloadPolicyNear;
+        self.showOnNavigationBar = YES;
+        self.titleSizeNormal = 16;
+        self.titleSizeSelected = 18;
+        self.titleColorNormal = UIColorHex(#ffffff);
+        self.titleColorSelected = UIColorHex(#ffffff);
+        self.progressColor = UIColorHex(#ff4ba3);
+        self.automaticallyCalculatesItemWidths = YES;
+        self.itemMargin = AdaWidth(30);
+        
+        self.menuViewStyle = WMMenuViewStyleDefault;
+        self.menuViewLayoutMode = WMMenuViewLayoutModeCenter;
+    }
+    return self;
+}
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.navigationController.navigationBar.barStyle = UIBarStyleBlack;
-    self.preloadPolicy = WMPageControllerPreloadPolicyNever;
-    self.showOnNavigationBar = YES;
-    
-    self.titleSizeNormal = 16;
-    self.titleSizeSelected = 18;
-    self.titleColorNormal = UIColorHex(#ffffff);
-    self.titleColorSelected = UIColorHex(#ffffff);
-    self.progressColor = UIColorHex(#ff4ba3);
-    
-    self.automaticallyCalculatesItemWidths = YES;
-    
-    self.itemMargin = xxAdaWidth(30);
-    
-    self.menuViewStyle = WMMenuViewStyleDefault;
-    self.menuViewLayoutMode = WMMenuViewLayoutModeCenter;
-    
-    [self addBackItem];
+    self.edgesForExtendedLayout = UIRectEdgeNone;
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(goToRankingVC) name:@"goToRankingVC" object:nil];
 }
 
+
 - (void)goToRankingVC {
-    
     self.selectIndex = 1;
 }
+
 
 - (CGFloat)menuView:(WMMenuView *)menu widthForItemAtIndex:(NSInteger)index {
     CGFloat width = [super menuView:menu widthForItemAtIndex:index];
     return width + 15;
 }
+
 
 - (NSInteger)numbersOfChildControllersInPageController:(WMPageController *)pageController {
     return 3;
@@ -66,6 +72,7 @@
     return @"NONE";
 }
 
+
 - (UIViewController *)pageController:(WMPageController *)pageController viewControllerAtIndex:(NSInteger)index {
     
     switch (index % 3) {
@@ -76,14 +83,16 @@
     return [[UIViewController alloc] init];
 }
 
+
 - (CGRect)pageController:(WMPageController *)pageController preferredFrameForMenuView:(WMMenuView *)menuView {
     return CGRectMake(0, 0, self.view.width, NavigationBar_HEIGHT);
 }
 
+
 - (CGRect)pageController:(WMPageController *)pageController preferredFrameForContentView:(WMScrollView *)contentView {
-    
     return CGRectMake(0, 0, self.view.width, self.view.height);
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

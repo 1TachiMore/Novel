@@ -9,6 +9,8 @@
 #import "AppDelegate.h"
 #import "BaseNavigationViewController.h"
 #import "XXMainViewController.h"
+#import "XXDatabase.h"
+#import "XXBookModel.h"
 
 @interface AppDelegate ()
 
@@ -32,14 +34,16 @@
     
     //创建导航控制器
     BaseNavigationViewController *nav = [[BaseNavigationViewController alloc] initWithRootViewController:[[XXMainViewController alloc] init]];
-    
     nav.fd_fullscreenPopGestureRecognizer.enabled = YES;
+    
     
     //设置窗口的根控制器
     self.window.rootViewController = nav;
-    
     [self.window makeKeyAndVisible];
     
+    [[UIApplication sharedApplication] setStatusBarHidden:NO];
+    
+    [self setupNavigationBar];
     [self setupRequest];
     
     [kTool networkStatusWithBlock:^(HttpStatusType status) {
@@ -49,11 +53,23 @@
     return YES;
 }
 
+
+//设置网络
 - (void)setupRequest {
     YTKNetworkConfig *config = [YTKNetworkConfig sharedConfig];
     config.baseUrl = SERVERCE_HOST;
     config.cdnUrl = chapter_URL;
 }
+
+
+- (void)setupNavigationBar {
+    [UINavigationBar appearance].tintColor = kwhiteColor;
+    [[UINavigationBar appearance] setBarTintColor:kwhiteColor];
+    [[UINavigationBar appearance] setBarStyle:UIBarStyleBlack];
+    UIImage *navImage = [UIImage imageWithColor:[UIColor colorWithRed:0.12 green:0.12 blue:0.12 alpha:1.00] size:CGSizeMake(kScreenWidth, kMaxNavHeight)];
+    [[UINavigationBar appearance] setBackgroundImage:navImage forBarMetrics:UIBarMetricsDefault];
+}
+
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
@@ -64,18 +80,14 @@
 - (void)applicationDidEnterBackground:(UIApplication *)application {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    
-    ReadingManager *manager = [ReadingManager shareReadingManager];
-    
-    if (manager.isSave) {
-        [SQLiteTool updateWithTableName: manager.bookId dict:@{@"chapter": @(manager.chapter), @"page": @(manager.page), @"status": @"0"}];
-    }
     NSLog(@"----退出程序");
 }
+
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
     return self.window.rootViewController.supportedInterfaceOrientations;
 }
+
 
 - (void)applicationWillEnterForeground:(UIApplication *)application {
     // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.

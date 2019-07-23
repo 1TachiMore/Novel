@@ -26,6 +26,7 @@
 
 @implementation XXSearchVC
 
+
 - (NSMutableArray *)tags {
     if (!_tags) {
         _tags = @[].mutableCopy;
@@ -33,6 +34,7 @@
     }
     return _tags;
 }
+
 
 - (NSMutableArray *)colors {
     if (!_colors) {
@@ -47,6 +49,7 @@
     }
     return _colors;
 }
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -68,9 +71,10 @@
     everyLabel.text = @"大家都在搜";
     [_topView addSubview:everyLabel];
     
-    UIButton *refreshButton = [UIButton newButtonTitle:@"换一批" font:13 normarlColor:kgrayColor];
-    [refreshButton setImage:UIImageWithName(@"search_refresh") forState:0];
-    [refreshButton setImagePosition:kImagePosition_left spacing:3];
+    UIImageView *refreshView = [[UIImageView alloc] initWithImage:UIImageName(@"search_refresh")];
+    [_topView addSubview:refreshView];
+    
+    UIButton *refreshButton = [UIButton newButtonTitle:@"换一批" font:fontSize(13) normarlColor:kgrayColor];
     [refreshButton addTarget:self action:@selector(configTag) forControlEvents:UIControlEventTouchUpInside];
     [_topView addSubview:refreshButton];
     
@@ -87,48 +91,54 @@
     [_topView addSubview:_tagsView];
     
     //布局
-    
     [_topView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.left.right.equalTo(self.view);
-        make.bottom.mas_equalTo(_tagsView.mas_bottom).offset(kCellX);
+        make.bottom.mas_equalTo(_tagsView.mas_bottom).offset(AdaWidth(12.f));
     }];
     
     [everyLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_topView.mas_top).offset(kCellX);
-        make.left.mas_equalTo(_topView.mas_left).offset(kCellX);
+        make.top.mas_equalTo(_topView.mas_top).offset(AdaWidth(16));
+        make.left.mas_equalTo(_topView.mas_left).offset(AdaWidth(12.f));
     }];
     
     [refreshButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.equalTo(everyLabel);
-        make.right.mas_equalTo(_topView.mas_right).offset(-kCellX);
+        make.centerY.equalTo(everyLabel);
+        make.right.mas_equalTo(_topView.mas_right).offset(-AdaWidth(12.f));
     }];
-    [refreshButton setEnlargeEdgeWithTop:kCellX right:kCellX bottom:kCellX left:kCellX];
+    [refreshButton setEnlargeEdgeWithTop:AdaWidth(12.f) right:AdaWidth(12.f) bottom:AdaWidth(12.f) left:20];
+    
+    [refreshView mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(refreshButton);
+        make.right.mas_equalTo(refreshButton.mas_left).offset(-4);
+    }];
     
     [_searchBar mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(everyLabel.mas_bottom).offset(kCellX);
-        make.left.right.equalTo(_topView);
-        make.height.mas_equalTo(xxAdaWidth(40));
+        make.top.mas_equalTo(everyLabel.mas_bottom).offset(AdaWidth(16));
+        make.left.equalTo(@(AdaWidth(12)));
+        make.right.equalTo(@(AdaWidth(-12)));
+        make.height.mas_equalTo(AdaWidth(40));
     }];
     
     [_tagsView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_searchBar.mas_bottom).offset(xxAdaWidth(20));
-        make.left.mas_equalTo(_topView.mas_left).offset(kCellX);
-        make.right.mas_equalTo(_topView.mas_right).offset(-kCellX);
+        make.top.mas_equalTo(_searchBar.mas_bottom).offset(AdaWidth(20));
+        make.left.mas_equalTo(_topView.mas_left).offset(AdaWidth(12.f));
+        make.right.mas_equalTo(_topView.mas_right).offset(-AdaWidth(12.f));
     }];
 }
+
 
 - (void)configTag {
     
     TTGTextTagConfig *textConfig = [[TTGTextTagConfig alloc] init];
-    textConfig.tagTextFont = fontSize(14);
-    textConfig.tagTextColor = kwhiteColor;
-    textConfig.tagCornerRadius = xxAdaWidth(5);
-    textConfig.tagSelectedCornerRadius = xxAdaWidth(5);
-    textConfig.tagBorderWidth = 0;
-    textConfig.tagSelectedBorderWidth = 0;
-    textConfig.tagShadowColor = kclearColor;
+    textConfig.textFont = fontSize(14);
+    textConfig.textColor = kwhiteColor;
+    textConfig.cornerRadius = AdaWidth(5);
+    textConfig.selectedCornerRadius = AdaWidth(5);
+    textConfig.borderWidth = 0;
+    textConfig.selectedBorderWidth = 0;
+    textConfig.shadowColor = kclearColor;
     
-    textConfig.tagExtraSpace = CGSizeMake(xxAdaWidth(15), xxAdaWidth(10));
+    textConfig.extraSpace = CGSizeMake(AdaWidth(15), AdaWidth(10));
     
     _tagsView.defaultConfig = textConfig;
     
@@ -136,9 +146,9 @@
     _tagsView.contentInset = UIEdgeInsetsMake(0, 0, 0, 0);
     
     //间距
-    _tagsView.horizontalSpacing = xxAdaWidth(15);
+    _tagsView.horizontalSpacing = AdaWidth(15);
     
-    _tagsView.verticalSpacing = xxAdaHeight(10);
+    _tagsView.verticalSpacing = AdaHeight(10);
     
     _tagsView.alignment = TTGTagCollectionAlignmentLeft;
     _tagsView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -153,18 +163,20 @@
     
     for (int i = 0; i < tags.count; i++) {
         
-        textConfig.tagBackgroundColor = self.colors[i];
-        textConfig.tagSelectedBackgroundColor = self.colors[i];
+        textConfig.backgroundColor = self.colors[i];
+        textConfig.selectedBackgroundColor = self.colors[i];
         
         [_tagsView addTags:[tags subarrayWithRange:NSMakeRange(location, length)] withConfig:[textConfig copy]];
         location += length;
     }
 }
 
+
 //获取一个随机整数，范围在[from,to]，包括from，包括to
 - (int)getRandomNumber:(int)from to:(int)to {
     return (int)(from + (arc4random() % (to - from + 1)));
 }
+
 
 //获取要随机一个数组
 - (NSArray *)tagArray {
@@ -178,6 +190,7 @@
     return [randomSet allObjects];
 }
 
+
 #pragma mark - UISearchBarDelegate
 //开始编辑
 - (void)searchBarTextDidBeginEditing:(UISearchBar *)searchBar {
@@ -187,16 +200,19 @@
         for (UIView *view in [[_searchBar.subviews lastObject] subviews]) {
             if ([view isKindOfClass:[UIButton class]]) {
                 UIButton *cancelBtn = (UIButton *)view;
+                [cancelBtn setTitleColor:UIColorHex(#4a90e2) forState:0];
                 [cancelBtn setTitle:@"取消" forState:UIControlStateNormal];
             }
         }
     }];
 }
 
+
 //结束编辑
 - (void)searchBarTextDidEndEditing:(UISearchBar *)searchBar {
     
 }
+
 
 //搜索
 - (void)searchBarSearchButtonClicked:(UISearchBar *)searchBar {
@@ -208,14 +224,13 @@
     }
 }
 
+
 - (void)saerchWithText:(NSString *)text {
-    XXBookListVC *vc = [XXBookListVC new];
-    vc.title = text;
-    vc.search = text;
-    vc.booklist_type = kBookListType_search;
-    
-    [self.navigationController pushViewController:vc animated:YES];
+    XXBookListVC *vc = [[XXBookListVC alloc] initWithType:kBookListType_search id:text];
+    vc.navigationItem.title = text;
+    [self pushViewController:vc];
 }
+
 
 //取消
 - (void)searchBarCancelButtonClicked:(UISearchBar *)searchBar {
@@ -227,12 +242,14 @@
     }];
 }
 
+
 #pragma mark - TTGTextTagCollectionViewDelegate
 
 - (void)textTagCollectionView:(TTGTextTagCollectionView *)textTagCollectionView didTapTag:(NSString *)tagText atIndex:(NSUInteger)index selected:(BOOL)selected {
     
     [self saerchWithText:tagText];
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

@@ -6,7 +6,7 @@
 //  Copyright © 2018年 th. All rights reserved.
 //
 
-#define kItemW xxAdaWidth(44)
+#define kItemW AdaWidth(44)
 
 #import "XXBookSettingView.h"
 
@@ -33,8 +33,9 @@
 
 - (void)setupLayout {
     
-    UIImage *sImage = UIImageWithName(@"setting_font_smaller_normal");
-    UIImage *bImage = UIImageWithName(@"setting_font_bigger");
+    UIImage *sImage = UIImageName(@"setting_font_smaller_normal");
+    UIImage *bImage = UIImageName(@"setting_font_bigger");
+    UIImage *settingImage = UIImageName(@"blackboard_reader_setting");
     
     UIButton *smallButton = [[UIButton alloc] init];
     [smallButton setImage:sImage forState:UIControlStateNormal];
@@ -44,8 +45,12 @@
     [bigButton setImage:bImage forState:UIControlStateNormal];
     [self addSubview:bigButton];
     
+    UIButton *settingButton = [[UIButton alloc] init];
+    [settingButton setImage:settingImage forState:UIControlStateNormal];
+    [self addSubview:settingButton];
+    
 //    _landspaceButton = [UIButton newButtonTitle:@"" font:15 normarlColor:kwhiteColor];
-//    _landspaceButton.layer.cornerRadius = xxAdaWidth(5);
+//    _landspaceButton.layer.cornerRadius = AdaWidth(5);
 //    _landspaceButton.layer.borderColor = klineColor.CGColor;
 //    _landspaceButton.layer.borderWidth = klineHeight;
 //    [self addSubview:_landspaceButton];
@@ -59,13 +64,14 @@
 //        [_landspaceButton setTitle:@"横屏" forState:0];
 //    }
     
-    CGFloat fontBtnSpaceX = xxAdaWidth(20);
-    CGFloat centerSpace = (sImage.size.width/2 + fontBtnSpaceX/2);
+    CGFloat settingWidth = AdaWidth(60);
+    CGFloat fontBtnSpaceX = AdaWidth(20);
+    CGSize buttonSize = CGSizeMake((kScreenWidth - fontBtnSpaceX*2 - settingWidth)/2, sImage.height);
     
     [smallButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(self.mas_top).offset(kCellX);
-        make.centerX.mas_equalTo(self).offset(-centerSpace);
-        make.size.mas_equalTo(sImage.size);
+        make.top.mas_equalTo(self.mas_top).offset(AdaWidth(12.f));
+        make.left.equalTo(@(fontBtnSpaceX));
+        make.size.mas_equalTo(buttonSize);
     }];
     
     [bigButton mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -74,22 +80,22 @@
         make.size.equalTo(smallButton);
     }];
     
-    [smallButton mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(smallButton.mas_bottom).offset(kCellX);
-        make.centerX.equalTo(self);
-        make.size.mas_equalTo(sImage.size);
+    [settingButton mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.centerY.equalTo(bigButton);
+        make.right.equalTo(@0);
+        make.width.mas_equalTo(settingWidth);
     }];
     
-    xxWeakify(self)
+    MJWeakSelf;
     [[smallButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-        if (weakself.changeSmallerFontBlock) {
-            weakself.changeSmallerFontBlock();
+        if (weakSelf.changeSmallerFontBlock) {
+            weakSelf.changeSmallerFontBlock();
         }
     }];
     
     [[bigButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-        if (weakself.changeBiggerFontBlock) {
-            weakself.changeBiggerFontBlock();
+        if (weakSelf.changeBiggerFontBlock) {
+            weakSelf.changeBiggerFontBlock();
         }
     }];
     
@@ -99,20 +105,28 @@
 //        }
 //    }];
     
+    [[settingButton rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
+        if (weakSelf.moreSettingBlock) {
+            weakSelf.moreSettingBlock();
+        }
+    }];
+    
     _colorSubViews = [[NSMutableArray alloc] init];
     
-    NSArray *colors = @[UIColorHex(#D9D9D9), UIColorHex(#B4AE99), UIColorHex(#B7E1B9), UIColorHex(#F9E7C0), UIColorHex(#FFCDE0)];
+    NSArray *colors = @[@"def_53x32_", @"ink_53x32_", @"flax_53x32_", @"green_53x32_", @"peach_53x32_"];
     
-    CGFloat itemSpace = (xxScreenWidth - colors.count * kItemW) / (colors.count + 1);
+    CGFloat itemSpace = (kScreenWidth - colors.count * kItemW) / (colors.count + 1);
     
     MAS_VIEW *prev;
     for (int i = 0; i < colors.count; i++) {
         
+        kBgColor bgColor = i + 1;
+        
         UIButton *colorButton = [[UIButton alloc] init];
-        colorButton.tag = i;
-        colorButton.backgroundColor = colors[i];
+        colorButton.tag = bgColor;
+        [colorButton setBackgroundImage:UIImageName(colors[i]) forState:0];
         colorButton.layer.masksToBounds = YES;
-        [colorButton setImage:UIImageWithName(@"setting_theme_selected") forState:UIControlStateSelected];
+        [colorButton setImage:UIImageName(@"setting_theme_selected") forState:UIControlStateSelected];
         [self addSubview:colorButton];
         
         [colorButton addTarget:self action:@selector(seletedColor:) forControlEvents:UIControlEventTouchUpInside];
@@ -120,14 +134,14 @@
         [colorButton mas_makeConstraints:^(MASConstraintMaker *make) {
             make.size.mas_equalTo(CGSizeMake(kItemW, kItemW));
             make.left.equalTo(prev ? prev.mas_right : self.mas_left).offset(itemSpace);
-            make.top.mas_equalTo(smallButton.mas_bottom).offset(kCellX);
-            make.bottom.mas_equalTo(self.mas_bottom).offset(-kCellX);
+            make.top.mas_equalTo(smallButton.mas_bottom).offset(AdaWidth(12.f));
+            make.bottom.mas_equalTo(self.mas_bottom).offset(-AdaWidth(12.f));
         }];
         colorButton.layer.cornerRadius = kItemW/2;
         
         prev = colorButton;
         
-        if (kReadingManager.bgColor == i) {
+        if (kReadingManager.bgColor == bgColor) {
             [self seletedColor:colorButton];
         }
         
@@ -139,7 +153,7 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
-    CGFloat itemSpace = (xxScreenWidth - _colorSubViews.count * kItemW) / (_colorSubViews.count + 1);
+    CGFloat itemSpace = (kScreenWidth - _colorSubViews.count * kItemW) / (_colorSubViews.count + 1);
     
     MAS_VIEW *prev;
     for (int i = 0; i < _colorSubViews.count; i++) {
@@ -160,15 +174,15 @@
     if (sender.selected) return;
     
     sender.selected = YES;
-    
     _colorSeletedButton.selected = NO;
-    
     _colorSeletedButton = sender;
     
     kReadingManager.bgColor = sender.tag;
+    kReadingManager.dayMode = kDayMode_light;
     
     //查询设置model
     BookSettingModel *model = [BookSettingModel decodeModelWithKey:[BookSettingModel className]];
+    model.dayMode = kReadingManager.dayMode;
     model.bgColor = sender.tag;
     [BookSettingModel encodeModel:model key:[BookSettingModel className]];
     
@@ -176,31 +190,27 @@
     [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationWithChangeBg object:nil userInfo:@{kNotificationWithChangeBg:NSStringFormat(@"%ld", (long)sender.tag)}];
 }
 
-- (void)refreshColorSeleted:(NSUInteger)index {
+
+- (void)changeLightbgColorSeleted:(kBgColor)bgColor {
     
-    [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationDayAndNightBg object:nil userInfo:@{kNotificationDayAndNightBg: NSStringFormat(@"%ld", index)}];
+    UIButton *seletedButton;
+    for (UIButton *button in _colorSubViews) {
+        if (button.tag == bgColor) {
+            seletedButton = button;
+            break;
+        }
+    }
     
-    if (index == 5) {
-        //黑夜
-        [_colorSeletedButton setSelected:NO];
-        
-        //存储
-        BookSettingModel *model = [BookSettingModel decodeModelWithKey:[BookSettingModel className]];
-        model.bgColor = index;
-        [BookSettingModel encodeModel:model key:[BookSettingModel className]];
-        
-    } else {
-        UIButton *seletedButton = _colorSubViews[index];
-        [self seletedColor:seletedButton];
+    if (seletedButton) {
+       [self seletedColor:seletedButton];
     }
 }
 
-/*
-// Only override drawRect: if you perform custom drawing.
-// An empty implementation adversely affects performance during animation.
-- (void)drawRect:(CGRect)rect {
-    // Drawing code
+
+- (void)changeNight {
+    for (UIButton *button in _colorSubViews) {
+        button.selected = NO;
+    }
 }
-*/
 
 @end

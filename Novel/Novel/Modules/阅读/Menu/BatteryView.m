@@ -8,12 +8,13 @@
 
 #import "BatteryView.h"
 
+@interface BatteryView()
+
+
+@end
+
 @implementation BatteryView
 
-- (void)layoutSubviews {
-    [super layoutSubviews];
-    [self drawRect:self.frame];
-}
 
 - (void)drawRect:(CGRect)rect {
     CGContextRef context = UIGraphicsGetCurrentContext();
@@ -57,5 +58,7 @@
     
     return 0;
 }
+
+
 
 @end

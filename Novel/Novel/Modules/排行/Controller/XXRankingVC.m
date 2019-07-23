@@ -8,7 +8,7 @@
 //
 
 #import "XXRankingVC.h"
-#import "XXRandingApi.h"
+#import "XXRankingApi.h"
 #import "XXRankingCell.h"
 #import "RankingModel.h"
 #import "XXBookListMainVC.h"
@@ -50,9 +50,21 @@
     _maleMoreArr = [[NSMutableArray alloc] init];
     _femaleMoreArr = [[NSMutableArray alloc] init];
     
-    [self setupEstimatedRowHeight:xxAdaWidth(54) registerCell:[XXRankingCell class]];
+    [self configEmptyView];
+    
+    [self setupEstimatedRowHeight:AdaWidth(54) registerCell:[XXRankingCell class]];
     
     [self requestDataWithShowLoading:YES];
+}
+
+
+- (void)configEmptyView {
+    [super configEmptyView];
+    self.emptyView.refreshDelegate = [RACSubject subject];
+    MJWeakSelf;
+    [self.emptyView.refreshDelegate subscribeNext:^(id  _Nullable x) {
+        [weakSelf requestDataWithShowLoading:YES];
+    }];
 }
 
 
@@ -61,9 +73,9 @@
 }
 
 
-- (void)requestDataWithOffset:(NSInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
+- (void)requestDataWithOffset:(NSUInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
     
-    XXRandingApi *api = [[XXRandingApi alloc] initWithParameter:@{@"timestamp": [DateTools getTimeInterval],@"platform": @"ios"} url:URL_ranking_gender];
+    XXRankingApi *api = [[XXRankingApi alloc] initWithParameter:@{@"timestamp": [DateTools getTimeInterval],@"platform": @"ios"} url:URL_ranking_gender];
     
     [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
         
@@ -78,7 +90,7 @@
         NSMutableArray *femaleArr = [[NSMutableArray alloc] init];
         NSMutableArray *epubArr = [[NSMutableArray alloc] init];
         
-        RankingModel *model = [RankingModel modelWithDictionary:request.responseObject];
+        RankingModel *model = [RankingModel yy_modelWithDictionary:request.responseObject];
         
         for (RankingDeModel *m in model.male) {
             if (!m.collapse) {
@@ -117,6 +129,9 @@
         [self endRefresh];
         [self.tableView reloadData];
         
+        self.emptyView.hidden = YES;
+        [HUD hide];
+        
     } failure:^(__kindof YTKBaseRequest * _Nonnull request) {
         failure([request.error localizedDescription]);
     }];
@@ -154,7 +169,7 @@
     
     view.backgroundColor = [UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1.00];
     
-    YYLabel *label = [[YYLabel alloc] initWithFrame:CGRectMake(kCellX, 0, kScreenWidth - kCellX, 44)];
+    YYLabel *label = [[YYLabel alloc] initWithFrame:CGRectMake(AdaWidth(12.f), 0, kScreenWidth - AdaWidth(12.f), 44)];
     
     label.textColor = [UIColor colorWithRed:0.65 green:0.65 blue:0.65 alpha:1.00];
     
@@ -174,7 +189,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section {
-    return xxAdaWidth(44);
+    return AdaWidth(44);
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForFooterInSection:(NSInteger)section {
@@ -219,29 +234,22 @@
             
             if (!model.collapse) {
                 XXBookListMainVC *vc = [[XXBookListMainVC alloc] init];
-                
-                vc.title = model.title;
+                vc.navigationItem.title = model.title;
                 vc.id = model._id;
                 vc.monthRank = model.monthRank;
                 vc.totalRank = model.totalRank;
                 vc.booklist_type = kBookListType_rank;
-                
-                [self.navigationController pushViewController:vc animated:YES];
-                
+                [self pushViewController:vc];
             } else {
-                XXBookListVC *vc = [[XXBookListVC alloc] init];
-                vc.title = model.title;
-                vc.id = model._id;
-                vc.booklist_type = kBookListType_rank;
-                [self.navigationController pushViewController:vc animated:YES];
+                XXBookListVC *vc = [[XXBookListVC alloc] initWithType:kBookListType_rank id:model._id];
+                vc.navigationItem.title = model.title;
+                [self pushViewController:vc];
             }
         }
     } else {
-        XXBookListVC *vc = [[XXBookListVC alloc] init];
-        vc.title = model.title;
-        vc.id = model._id;
-        vc.booklist_type = kBookListType_rank;
-        [self.navigationController pushViewController:vc animated:YES];
+        XXBookListVC *vc = [[XXBookListVC alloc] initWithType:kBookListType_rank id:model._id];
+        vc.navigationItem.title = model.title;
+        [self pushViewController:vc];
     }
     
 }

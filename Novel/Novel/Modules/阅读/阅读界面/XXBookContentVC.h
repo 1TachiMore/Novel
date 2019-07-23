@@ -8,11 +8,16 @@
 
 #import <UIKit/UIKit.h>
 #import "ReadingManager.h"
-#import "BookChapterModel.h"
+
+@protocol XXBookContentVCDelegate <NSObject>
+
+
+
+@end
 
 @interface XXBookContentVC : UIViewController
 
-@property (nonatomic, strong) BookChapterModel *bookModel;
+@property (nonatomic, strong) XXBookChapterModel *bookModel;
 
 /** 第n章 */
 @property (nonatomic, assign) NSUInteger chapter;

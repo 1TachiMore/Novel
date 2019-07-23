@@ -10,13 +10,12 @@
 #import "XXBookSettingView.h"
 
 typedef NS_ENUM(NSUInteger, kBookMenuType) {
-    kBookMenuType_source = 0, //换源头
-    kBookMenuType_close = 1, //关闭
-    kBookMenuType_day = 2, //白天或者黑夜
-    kBookMenuType_feedBack = 3, //反馈
-    kBookMenuType_directory = 4, //目录
-    kBookMenuType_down = 5, //下载
-    kBookMenuType_setting = 6, //设置
+    kBookMenuType_source, //换源头
+    kBookMenuType_close, //关闭
+    kBookMenuType_day, //白天或者黑夜
+    kBookMenuType_directory , //目录
+    kBookMenuType_down, //下载
+    kBookMenuType_setting, //设置
 };
 
 @interface XXBookMenuView : BaseView

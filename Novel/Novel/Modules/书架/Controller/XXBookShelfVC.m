@@ -10,6 +10,9 @@
 #import "XXBookShelfCell.h"
 #import "XXUpdateChapterApi.h"
 #import "XXBookReadingVC.h"
+#import "XXBookUpdateModel.h"
+#import "XXDatabase.h"
+#import "XXBookModel.h"
 
 @interface XXBookShelfVC ()
 
@@ -21,64 +24,101 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-//    self.bl_shouldAutoLandscape = YES;
     
-    [self setupEstimatedRowHeight:xxAdaWidth(65) registerCell:[XXBookShelfCell class]];
+    [self configEmptyView];
     
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadSelf:) name:@"reloadBookShelf" object:nil];
+    [self setupEstimatedRowHeight:AdaWidth(65) registerCell:[XXBookShelfCell class]];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadSelf:) name:kReloadBookShelfNotification object:nil];
 }
 
 #pragma mark - 接收通知，刷新界面
 - (void)reloadSelf:(NSNotification *)sender {
-    self.datas = [SQLiteTool getBooksShelf];
+    [self.datas removeAllObjects];
+    [self.datas addObjectsFromArray:[kDatabase getBooks]];
     [self.tableView reloadData];
+    self.emptyView.hidden = self.datas.count;
 }
+
 
 - (void)configListDownpullRefresh {
     
-    self.datas = [SQLiteTool getBooksShelf];
+    [self.datas removeAllObjects];
+    [self.datas addObjectsFromArray:[kDatabase getBooks]];
+    self.emptyView.hidden = self.datas.count;
     
-    xxWeakify(self)
+    MJWeakSelf;
     self.tableView.mj_header = [MJDIYHeader headerWithRefreshingBlock:^{
-        weakself.page = self.initialPage;
-        [weakself requestDataWithShowLoading:NO];
+        weakSelf.page = weakSelf.initialPage;
+        [weakSelf requestDataWithShowLoading:NO];
     }];
     
     [self.tableView.mj_header beginRefreshing];
 }
 
+
 - (void)configListOnpullRefresh {
 
 }
 
-- (void)requestDataWithOffset:(NSInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
+
+- (void)configEmptyView {
+    [super configEmptyView];
+    [self.emptyView showImage:nil title:@"您还没有添加书籍，点击添加哦" message:nil];
+    self.emptyView.titleMarginTop = -(self.view.height/2 - 100);
+    self.emptyView.refreshDelegate = [RACSubject subject];
+    [self.emptyView.refreshDelegate subscribeNext:^(id  _Nullable x) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"goToRankingVC" object:nil];
+    }];
+}
+
+- (NSString *)componentsJoineWithArrID:(NSArray *)array {
     
-    XXUpdateChapterApi *api = [[XXUpdateChapterApi alloc] initWithParameter:@{@"view": @"updated", @"id": [BookShelfModel componentsJoineWithArrID:self.datas]} url:URL_bookShelf_update];
-    
+    if (!IsEmpty(array)) {
+        NSMutableArray *temps = @[].mutableCopy;
+        for (XXBookModel *model in array) {
+            [temps addObject:model.id];
+        }
+        return [temps componentsJoinedByString:@","];
+    } else {
+        return @"";
+    }
+}
+
+- (void)requestDataWithOffset:(NSUInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
+
+    XXUpdateChapterApi *api = [[XXUpdateChapterApi alloc] initWithParameter:@{@"view": @"updated", @"id": [self componentsJoineWithArrID:self.datas]} url:URL_bookShelf_update];
+
     [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
         
-        NSArray *updates = [NSArray modelArrayWithClass:[BookShelfModel class] json:request.responseString];
+        NSArray *updates = [NSArray yy_modelArrayWithClass:[XXBookUpdateModel class] json:request.responseString];
         
         for (int i = 0; i < updates.count; i++) {
-            
-            BookShelfModel *m1 = self.datas[i];
-            BookShelfModel *m2 = updates[i];
+
+            XXBookModel *m1 = self.datas[i];
+            XXBookUpdateModel *m2 = updates[i];
             
             //status=0 -->NO 不显示  status=1 -->YES 显示
             if (![m1.lastChapter isEqualToString:m2.lastChapter]) {
                 //有更新
                 m1.updated = m2.updated;
                 m1.lastChapter = m2.lastChapter;
-                m1.status = @"1";
-                [SQLiteTool updateWithTableName:m1.id dict:@{@"lastChapter":m2.lastChapter, @"updated":m1.updated, @"status":@"1"}];
+                m1.updateStatus = YES;
+                
+                [kDatabase updateBook:m1];
             }
         }
-        
+
         [self.tableView reloadData];
         [self endRefresh];
-        
+
     } failure:^(__kindof YTKBaseRequest * _Nonnull request) {
-        [self showEmpty:@"书架空空如也"];
+        if (self.datas.count == 0) {
+            self.emptyView.hidden = NO;
+        }
+        else {
+            [HUD showError:[api.error localizedDescription] inview:self.view];
+        }
         [self endRefresh];
     }];
 }
@@ -87,10 +127,9 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    BookShelfModel *model = self.datas[indexPath.row];
+    XXBookModel *model = self.datas[indexPath.row];
 
     XXBookReadingVC *vc = [[XXBookReadingVC alloc] initWithBookId:model.id bookTitle:model.title summaryId:model.summaryId];
-
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];;
 
     [self.navigationController presentViewController:nav animated:YES completion:^{
@@ -101,12 +140,12 @@
 
 - (void)configCellSubViewsCallback:(XXBookShelfCell *)cell indexPath:(NSIndexPath *)indexPath {
     
-    xxWeakify(self)
+    MJWeakSelf;
     cell.cellLongPress = ^(UILongPressGestureRecognizer *longPress) {
         switch (longPress.state) {
             case UIGestureRecognizerStateBegan: //开始
             {
-                BookShelfModel *model = self.datas[indexPath.row];
+                XXBookModel *model = self.datas[indexPath.row];
                 
                 CKAlertViewController *alertVC = [CKAlertViewController alertControllerWithTitle:model.title message:@"删除所选书籍及缓存文件？" ];
                 
@@ -116,25 +155,23 @@
                 
                 CKAlertAction *sure = [CKAlertAction actionWithTitle:@"确定" handler:^(CKAlertAction *action) {
                     NSLog(@"点击了 %@ 按钮",action.title);
-                    if ([SQLiteTool deleteTableName:model.id indatabasePath:kShelfPath]) {
+                    if ([kDatabase deleteBookWithId:model.id]) {
+                        //删除缓存的内容表
+                        NSString *name = [kDatabase getTableNameWithType:kDataTablaNameType_body name:model.id];
+                        [kDatabase dropTableName:name];
                         
-                        //删除缓存的章节
-                        [SQLiteTool deleteTableName:model.id indatabasePath:kChaptersPath];
+                        [weakSelf.datas removeAllObjects];
+                        [weakSelf.datas addObjectsFromArray:[kDatabase getBooks]];
+                        [weakSelf.tableView reloadData];
                         
-                        weakself.datas = [SQLiteTool getBooksShelf];
-                        
-                        [weakself.tableView reloadData];
-                        
-                        if (IsEmpty(self.datas)) {
-                            [weakself showEmpty:@"书架空空如也"];
+                        if (IsEmpty(weakSelf.datas)) {
+                            [weakSelf showEmpty:@"书架空空如也" message:nil];
                         }
-                        
                         NSLog(@"%@--删除成功",model.title);
-                        
-                    } else {
-                        [SVProgressHUD showErrorWithStatus:@"删除失败"];
                     }
-                    
+                    else {
+                        [HUD showError:@"删除失败" inview:weakSelf.view];
+                    }
                 }];
                 
                 [alertVC addAction:cancel];
@@ -157,52 +194,10 @@
     };
 }
 
-- (void)emptyDataSet:(UIScrollView *)scrollView didTapView:(UIView *)view {
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"goToRankingVC" object:nil];
-}
-
-- (NSAttributedString *)buttonTitleForEmptyDataSet:(UIScrollView *)scrollView forState:(UIControlState)state {
-    
-    UIImage *refreshImage = [UIImage imageNamed:@"blankRefresh"];
-    
-    NSMutableAttributedString *textTest = [[NSMutableAttributedString alloc] initWithString:@" 您还没有添加书籍，点击添加哦"];
-    textTest.font = fontSize(12);
-    
-    
-    YYTextContainer *container = [YYTextContainer containerWithSize:CGSizeMake(100, 100)];
-    container.maximumNumberOfRows = 1;
-    
-    YYTextLayout *layout = [YYTextLayout layoutWithContainer:container text:textTest];
-    
-    NSTextAttachment *attachment = [[NSTextAttachment alloc] init];
-    
-    attachment.bounds = CGRectMake(0, -(layout.textBoundingSize.height - refreshImage.height) * 0.5, refreshImage.width, refreshImage.height);
-    attachment.image = refreshImage;
-    
-    NSAttributedString *strAtt = [NSAttributedString attributedStringWithAttachment:attachment];
-    
-    NSMutableAttributedString *strMatt = [[NSMutableAttributedString alloc] initWithString:@" 您还没有添加书籍，点击添加哦"];
-    strMatt.font = fontSize(12);
-    strMatt.color = klightGrayColor;
-    
-    [strMatt insertAttributedString:strAtt atIndex:0];
-    
-    return strMatt;
-}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

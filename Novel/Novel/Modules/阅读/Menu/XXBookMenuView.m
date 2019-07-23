@@ -6,9 +6,9 @@
 //  Copyright © 2018年 th. All rights reserved.
 //
 
-#define kLeftX xxAdaWidth(15.f)
-#define kTopHeight (kAppDelegate.statusBarHeight + NavigationBar_HEIGHT + xxAdaWidth(25))
-#define kBottomHeight xxAdaWidth(55)
+#define kLeftX AdaWidth(15.f)
+#define kTopHeight (kAppDelegate.statusBarHeight + NavigationBar_HEIGHT + 25)
+#define kBottomHeight (55 + kSafeAreaInsets.safeAreaInsets.bottom)
 
 #import "XXBookMenuView.h"
 
@@ -49,10 +49,10 @@
     _topView.backgroundColor = [UIColor colorWithRed:0.12 green:0.12 blue:0.12 alpha:1.00];
     [self addSubview:_topView];
     
-    UIButton *replaceBtn = [UIButton newButtonTitle:@"换源" font:15 normarlColor:kwhiteColor];
+    UIButton *replaceBtn = [UIButton newButtonTitle:@"换源" font:fontSize(15) normarlColor:kwhiteColor];
     [_topView addSubview:replaceBtn];
     
-    _titleLabel = [UILabel newLabel:@"" andTextColor:kwhiteColor andFontSize:16];
+    _titleLabel = [UILabel newLabel:@"" andTextColor:kwhiteColor andFont:fontSize(16)];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     [_topView addSubview:_titleLabel];
     
@@ -61,7 +61,7 @@
     [closeBtn setImage:[UIImage imageNamed:@"sm_exit_selected"] forState:UIControlStateSelected];
     [_topView addSubview:closeBtn];
     
-    _linkLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFontSize:12];
+    _linkLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFont:fontSize(12)];
     _linkLabel.backgroundColor = [UIColor colorWithRed:0.16 green:0.16 blue:0.16 alpha:1.00];
     _linkLabel.numberOfLines = 1;
     _linkLabel.textAlignment = NSTextAlignmentCenter;
@@ -105,41 +105,42 @@
         make.left.right.mas_equalTo(_topView);
     }];
     
-    xxWeakify(self)
+    MJWeakSelf
     [[replaceBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-        if (weakself.delegate) {
-            [weakself.delegate sendNext: [NSNumber numberWithInteger:kBookMenuType_source]];
+        if (weakSelf.delegate) {
+            [weakSelf.delegate sendNext: [NSNumber numberWithInteger:kBookMenuType_source]];
         }
     }];
     
     [[closeBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-        if (weakself.delegate) {
-            [weakself.delegate sendNext: [NSNumber numberWithInteger:kBookMenuType_close]];
+        if (weakSelf.delegate) {
+            [weakSelf.delegate sendNext: [NSNumber numberWithInteger:kBookMenuType_close]];
         }
     }];
 }
+
 
 - (void)setupBottom {
     
     _bottomView = [[UIView alloc] init];
     _bottomView.backgroundColor = [UIColor colorWithRed:0.10 green:0.10 blue:0.10 alpha:1.00];
     [self addSubview:_bottomView];
-    
+
     [_bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(self.mas_bottom).offset(kBottomHeight);
         make.left.right.equalTo(self);
         make.height.mas_equalTo(kBottomHeight);
     }];
     
-    NSArray *images = @[@"night_mode", @"feedback", @"directory", @"preview_btn", @"reading_setting"];
+    NSArray *images = @[@"night_mode", @"directory", @"preview_btn", @"reading_setting"];
     
-    NSArray *titles = @[@"夜间", @"反馈", @"目录", @"缓存", @"设置"];
+    NSArray *titles = @[@"夜间", @"目录", @"缓存", @"设置"];
     
-    NSArray *types = @[[NSNumber numberWithInteger:kBookMenuType_day], [NSNumber numberWithInteger:kBookMenuType_feedBack], [NSNumber numberWithInteger:kBookMenuType_directory], [NSNumber numberWithInteger:kBookMenuType_down], [NSNumber numberWithInteger:kBookMenuType_setting]];
+    NSArray *types = @[[NSNumber numberWithInteger:kBookMenuType_day], [NSNumber numberWithInteger:kBookMenuType_directory], [NSNumber numberWithInteger:kBookMenuType_down], [NSNumber numberWithInteger:kBookMenuType_setting]];
     
     UIView *tempView = nil;
     
-    xxWeakify(self)
+    MJWeakSelf;
     for (int i = 0; i < images.count; i++) {
         
         XXHighLightButton *button = [[XXHighLightButton alloc] init];
@@ -147,20 +148,22 @@
         button.titleLabel.font = fontSize(13);
         [button setTitleColor:kwhiteColor forState:0];
         [button setTitle:titles[i] forState:0];
-        [button setImage:[UIImage imageNamed:images[i]] forState:0];
-        [button setImagePosition:kImagePosition_top spacing:xxAdaWidth(2)];
+        UIImage *image = [UIImage imageNamed:images[i]];
+        [button setImage:image forState:0];
+        [button setImagePosition:kImagePosition_top spacing:AdaWidth(2)];
         
         [_bottomView addSubview:button];
         
         [button mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.bottom.equalTo(_bottomView);
+            make.top.equalTo(_bottomView);
             make.left.mas_equalTo(tempView ? tempView.mas_right : _bottomView);
             make.width.mas_equalTo(_bottomView.mas_width).dividedBy(images.count);
+            make.height.mas_equalTo(kBottomHeight - kSafeAreaInsets.safeAreaInsets.bottom);
         }];
         
         [[button rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-            if (weakself.delegate) {
-                [weakself.delegate sendNext:types[i]];
+            if (weakSelf.delegate) {
+                [weakSelf.delegate sendNext:types[i]];
             }
         }];
         
@@ -170,32 +173,42 @@
             _dayButton = button;
             
             if (kReadingManager.bgColor != 5) {
-                [button setImage:UIImageWithName(@"day_mode") forState:0];
+                [button setImage:UIImageName(@"day_mode") forState:0];
                 [button setTitle:@"白天" forState:UIControlStateNormal];
             }
         }
     }
 }
 
+
 - (void)changeDayAndNight {
     
-    if (kReadingManager.bgColor != 5) {
+    if (kReadingManager.dayMode == kDayMode_light) {
+        
+        kReadingManager.dayMode = kDayMode_night;
+        kReadingManager.bgColor = kBgColor_Black;
+        
+        BookSettingModel *model = [BookSettingModel decodeModelWithKey:[BookSettingModel className]];
+        model.dayMode = kDayMode_light;
+        model.bgColor = kBgColor_Black;
+        [BookSettingModel encodeModel:model key:[BookSettingModel className]];
         
         [_dayButton setImage:[UIImage imageNamed:@"night_mode"] forState:0];
         [_dayButton setTitle:@"夜间" forState:UIControlStateNormal];
         
-        kReadingManager.bgColor = 5;
+        [_settingView changeNight];
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kNotificationWithChangeBg object:nil userInfo:@{kNotificationWithChangeBg:NSStringFormat(@"%ld", (long)kBgColor_Black)}];
         
     } else {
         
         [_dayButton setImage:[UIImage imageNamed:@"day_mode"] forState:0];
         [_dayButton setTitle:@"白天" forState:UIControlStateNormal];
         
-        kReadingManager.bgColor = 0;
+        [_settingView changeLightbgColorSeleted:kBgColor_default];
     }
-    
-    [_settingView refreshColorSeleted:kReadingManager.bgColor];
 }
+
 
 - (void)setupSettingView {
     
@@ -208,6 +221,7 @@
         make.bottom.mas_equalTo(_bottomView.mas_top);
     }];
 }
+
 
 - (void)configTap {
     
@@ -222,6 +236,7 @@
     
     [_settingView addGestureRecognizer:[tap deepCopy]];
 }
+
 
 - (void)showMenuWithDuration:(CGFloat)duration completion:(void(^)())completion {
     
@@ -263,6 +278,7 @@
         if (completion) completion();;
     }];
 }
+
 
 - (void)showTitle:(NSString *)title bookLink:(NSString *)link {
     

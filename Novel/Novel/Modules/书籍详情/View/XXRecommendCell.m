@@ -27,7 +27,7 @@
 
 - (UILabel *)titleLabel {
     if (!_titleLabel) {
-        _titleLabel = [UILabel newLabel:@"" andTextColor:kblackColor andFontSize:13];
+        _titleLabel = [UILabel newLabel:@"" andTextColor:kblackColor andFont:fontSize(13)];
         _titleLabel.textAlignment = NSTextAlignmentCenter;
     }
     return _titleLabel;
@@ -47,7 +47,7 @@
     
     self.coverView.frame = CGRectMake(0, 0, kCoverW, kCoverH);
     
-    [_coverView pin_setImageFromURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", statics_URL, model.cover]] placeholderImage:UIImageWithName(@"default_book_cover")];
+    [_coverView sd_setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@", statics_URL, model.cover]] placeholderImage:UIImageName(@"default_book_cover")];
     
     _titleLabel.frame = CGRectMake(0, _coverView.bottom + RlineSpace, kCoverW, RlabelH);
     

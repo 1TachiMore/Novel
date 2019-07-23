@@ -10,9 +10,11 @@
 #import "XXBookDetailApi.h"
 #import "BookDetailModel.h"
 #import "XXBookDetailView.h"
-#import "XXRecommendApi.h"
+#import "XXRankingApi.h"
 #import "XXBookReadingVC.h"
 #import "XXBookListVC.h"
+#import "XXDatabase.h"
+#import "XXBookModel.h"
 
 @interface XXBookDetailVC ()
 
@@ -30,6 +32,8 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
+    [self configEmptyView];
+    
     [self requestDataWithShowLoading:YES];
     
     [self configEvent];
@@ -43,14 +47,20 @@
     [_container mas_makeConstraints:^(MASConstraintMaker *make) {
         make.edges.equalTo(self.view);
     }];
+}
+
+
+- (void)configEmptyView {
+    [super configEmptyView];
     
-    _container.refreshDelegate = [RACSubject subject];
+    self.emptyView.refreshDelegate = [RACSubject subject];
     
-    xxWeakify(self)
-    [_container.refreshDelegate subscribeNext:^(id  _Nullable x) {
-        [weakself requestDataWithShowLoading:YES];
+    MJWeakSelf;
+    [self.emptyView.refreshDelegate subscribeNext:^(id  _Nullable x) {
+        [weakSelf requestDataWithShowLoading:YES];
     }];
 }
+
 
 - (void)configEvent {
     
@@ -66,17 +76,15 @@
                 case kBookDetailType_read: {
                     //开始阅读
                     XXBookReadingVC *vc = nil;
-
-                    if ([SQLiteTool isTableOK:self.model._id]) {
+                    XXBookModel *model = [kDatabase getBookWithId:self.model._id];
+                    if (model) {
                         //已加入书架
-                        BookShelfModel *model = [SQLiteTool getBookWithTableName:kShelfPath];
                         vc = [[XXBookReadingVC alloc] initWithBookId:self.model._id bookTitle:self.model.title summaryId:model.summaryId];
                     } else {
                         vc = [[XXBookReadingVC alloc] initWithBookId:self.model._id bookTitle:self.model.title summaryId:@""];
                     }
                     
                     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];;
-
                     [self.navigationController presentViewController:nav animated:YES completion:^{
                         vc.presentComplete = YES;
                     }];
@@ -84,12 +92,9 @@
                     
                     break;
                 case kBookDetailType_recommendMore: {
-                    XXBookListVC *vc = [[XXBookListVC alloc] init];
-                    vc.title = @"你可能感兴趣";
-                    vc.id = _id;
-                    vc.booklist_type = kBookListType_recommend;
-                    
-                    [self.navigationController pushViewController:vc animated:YES];
+                    XXBookListVC *vc = [[XXBookListVC alloc] initWithType:kBookListType_recommend id:_id];
+                    vc.navigationItem.title = @"你可能感兴趣";
+                    [self pushViewController:vc];
                 }
                     
                     break;
@@ -115,15 +120,15 @@
 - (void)requestDataWithShowLoading:(BOOL)show {
     [super requestDataWithShowLoading:show];
     
-    xxWeakify(self)
+    MJWeakSelf;
     
     [[[RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
         
-        XXBookDetailApi *api = [[XXBookDetailApi alloc] initWithParameter:nil url:URL_bookDetail(weakself.id)];
+        XXBookDetailApi *api = [[XXBookDetailApi alloc] initWithParameter:nil url:URL_bookDetail(weakSelf.id)];
         
         [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
             
-            weakself.model = [BookDetailModel modelWithDictionary:request.responseObject];
+            weakSelf.model = [BookDetailModel yy_modelWithDictionary:request.responseObject];
             
             [subscriber sendCompleted];
             
@@ -136,13 +141,13 @@
         
         return [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
             
-            XXRecommendApi *api = [[XXRecommendApi alloc] initWithParameter:nil url:URL_recommend(_id)];
+            XXRankingApi *api = [[XXRankingApi alloc] initWithParameter:nil url:URL_recommend(_id)];
             
             [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
                 
-                BooksListModel *model = [BooksListModel modelWithDictionary:request.responseObject];
+                BooksListModel *model = [BooksListModel yy_modelWithDictionary:request.responseObject];
                 
-                weakself.recommends = model.books;
+                weakSelf.recommends = model.books;
                 
                 [subscriber sendCompleted];
                 
@@ -154,11 +159,12 @@
         }];
     }] subscribeError:^(NSError * _Nullable error) {
         [HUD hide];
-        [weakself.container showEmptyError:[error localizedDescription]];
+        [weakSelf showEmpty:[error localizedDescription] message:nil];
     } completed:^{
         [HUD hide];
-        [weakself.container configWithModel:weakself.model];
-        [weakself.container configRecommendDatas:weakself.recommends];
+        [weakSelf.container configWithModel:weakSelf.model];
+        [weakSelf.container configRecommendDatas:weakSelf.recommends];
+        weakSelf.emptyView.hidden = YES;
     }];
 }
 

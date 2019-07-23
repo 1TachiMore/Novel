@@ -30,7 +30,7 @@
     navView.backgroundColor = [UIColor colorWithRed:0.12 green:0.12 blue:0.12 alpha:1.00];
     [self.view addSubview:navView];
     
-    UILabel *titleLabel = [UILabel newLabel:@"选择来源" andTextColor:kwhiteColor andFontSize:16];
+    UILabel *titleLabel = [UILabel newLabel:@"选择来源" andTextColor:kwhiteColor andFont:fontSize(16)];
     titleLabel.textAlignment = NSTextAlignmentCenter;
     [navView addSubview:titleLabel];
     
@@ -39,15 +39,15 @@
     [closeBtn setImage:[UIImage imageNamed:@"sm_exit_selected"] forState:UIControlStateSelected];
     [navView addSubview:closeBtn];
     
-    xxWeakify(self)
+    MJWeakSelf;
     [[closeBtn rac_signalForControlEvents:UIControlEventTouchUpInside] subscribeNext:^(__kindof UIControl * _Nullable x) {
-        [weakself go2Back];
+        [weakSelf go2Back];
     }];
     
     //约束
     
     CGFloat navHeight = kAppDelegate.statusBarHeight + NavigationBar_HEIGHT;
-    CGFloat leftX = xxAdaWidth(15.f);
+    CGFloat leftX = AdaWidth(15.f);
     
     [navView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.left.right.mas_equalTo(self.view);
@@ -83,29 +83,32 @@
     
 }
 
-- (void)requestDataWithOffset:(NSInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
+- (void)requestDataWithOffset:(NSUInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
     
     XXSummaryApi *api = [[XXSummaryApi alloc] initWithParameter:nil url:URL_summary(kReadingManager.bookId)];
     
     [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
         
-        NSArray *response = [NSArray modelArrayWithClass:[SummaryModel class] json:request.responseObject];
+        NSArray *response = [NSArray yy_modelArrayWithClass:[SummaryModel class] json:request.responseObject];
         
         NSMutableArray *datas = @[].mutableCopy;
         
         BOOL isFirst = YES;
         
         for (SummaryModel *model in response) {
-            //去掉追书的vip源，你懂得
-            if (!model.starting) {
-                
-                if (kReadingManager.summaryId.length > 0 && [model._id isEqualToString:kReadingManager.summaryId]) {
-                    model.isSelect = YES;
-                    isFirst = NO;
-                }
-                
-                [datas addObject:model];
+//            //去掉追书的vip源，你懂得
+//            if (!model.starting) {
+//                if (kReadingManager.summaryId.length > 0 && [model._id isEqualToString:kReadingManager.summaryId]) {
+//                    model.isSelect = YES;
+//                    isFirst = NO;
+//                }
+//                [datas addObject:model];
+//            }
+            if (kReadingManager.summaryId.length > 0 && [model._id isEqualToString:kReadingManager.summaryId]) {
+                model.isSelect = YES;
+                isFirst = NO;
             }
+            [datas addObject:model];
         }
         
         if (isFirst && datas.count > 0) {

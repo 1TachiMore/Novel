@@ -7,107 +7,98 @@
 //
 
 #import "XXBookListVC.h"
-#import "XXRandingApi.h"
-#import "XXRecommendApi.h"
-#import "XXSearchApi.h"
 #import "BooksListModel.h"
-#import "XXBookListCellNode.h"
 #import "XXBookDetailVC.h"
+#import "XXRankingListCell.h"
 
 @interface XXBookListVC ()
+
+@property (nonatomic, assign) kBookListType booklist_type;
+
+@property (nonatomic, copy) NSString *id;
 
 @end
 
 @implementation XXBookListVC
 
+static NSString *cellId = @"XXRankingListCellID";
+
+
+- (instancetype)initWithType:(kBookListType)booklist_type id:(NSString *)id {
+    if (self = [super init]) {
+        _booklist_type = booklist_type;
+        _id = id;
+    }
+    return self;
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.cellClass = [XXBookListCellNode class];
-    
+    [self configEmptyView];
     [self requestDataWithShowLoading:YES];
 }
+
+
+- (void)configEmptyView {
+    [super configEmptyView];
+    self.emptyView.refreshDelegate = [RACSubject subject];
+    MJWeakSelf;
+    [self.emptyView.refreshDelegate subscribeNext:^(id  _Nullable x) {
+        [weakSelf requestDataWithShowLoading:YES];
+    }];
+}
+
 
 - (void)configListOnpullRefresh {
 
 }
 
+
 - (void)configListDownpullRefresh {
     
 }
 
-- (void)requestDataWithOffset:(NSInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
+
+- (void)requestDataWithOffset:(NSUInteger)page success:(void (^)(NSArray *))success failure:(void (^)(NSString *))failure {
     
-    switch (_booklist_type) {
-        case kBookListType_rank: {
-            
-            XXRandingApi *api = [[XXRandingApi alloc] initWithParameter:nil url:URL_ranking(_id)];
-            
-            [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
-                
-                BooksListModel *model = [BooksListModel modelWithDictionary:request.responseObject[@"ranking"]];
-                
-                success(model.books);
-                
-            } failure:^(__kindof YTKBaseRequest * _Nonnull request) {
-                failure([request.error localizedDescription]);
-            }];
-            
-        }
-            break;
-            
-        case kBookListType_recommend: {
-            
-            XXRecommendApi *api = [[XXRecommendApi alloc] initWithParameter:nil url:URL_recommend(_id)];
-            
-            [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
-                
-                BooksListModel *model = [BooksListModel modelWithDictionary:request.responseObject];
-                success(model.books);
-                
-            } failure:^(__kindof YTKBaseRequest * _Nonnull request) {
-                failure([request.error localizedDescription]);
-            }];
-            
-        }
-            break;
-            
-        case kBookListType_search: {
-            
-            XXSearchApi *api = [[XXSearchApi alloc] initWithParameter:nil url:URL_search(_search)];
-            
-            [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
-                
-                BooksListModel *model = [BooksListModel modelWithDictionary:request.responseObject];
-                success(model.books);
-                
-            } failure:^(__kindof YTKBaseRequest * _Nonnull request) {
-                failure([request.error localizedDescription]);
-            }];
-            
-        }
-            break;
-            
-        default:
-            break;
-    }
+    [XXApi getBookListWithListType:self.booklist_type id:self.id success:^(NSArray<XXRankingListLayout *> *list) {
+        success(list);
+    } failure:^(NSString *errString) {
+        failure(errString);
+    }];
 }
 
-- (void)tableNode:(ASTableNode *)tableNode didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    [tableNode deselectRowAtIndexPath:indexPath animated:YES];
+
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    XXRankingListLayout *layout = self.datas[indexPath.row];
+    return layout.height;
+}
+
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    XXRankingListCell *cell = [tableView dequeueReusableCellWithIdentifier:cellId];
+    if (!cell) {
+        cell = [[XXRankingListCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:cellId];
+    }
+    [cell setLayout:self.datas[indexPath.row]];
+    return cell;
+}
+
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
     
-    BooksListItemModel *model = self.datas[indexPath.row];
+    XXRankingListLayout *layout = self.datas[indexPath.row];
     
     XXBookDetailVC *vc = [[XXBookDetailVC alloc] init];
+    vc.navigationItem.title = layout.model.title;
+    vc.id = layout.model._id;
     
-    vc.title = model.title;
-    vc.id = model._id;
-    
-    NSLog(@"---%@",model._id);
-    
-    [self.navigationController pushViewController:vc animated:YES];
+    [self pushViewController:vc];
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

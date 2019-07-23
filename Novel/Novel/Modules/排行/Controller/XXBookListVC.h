@@ -6,22 +6,16 @@
 //  Copyright © 2018年 th. All rights reserved.
 //
 
-#import "ASBaseTableNodeViewController.h"
+#import "BaseTableViewController.h"
+#import "XXApi.h"
 
-typedef NS_ENUM(NSInteger, kBookListType) {
-    kBookListType_rank, //排行版
-    kBookListType_recommend,//书籍详情里的推荐更多
-    kBookListType_search,//搜索
-};
+@interface XXBookListVC : BaseTableViewController
 
-@interface XXBookListVC : ASBaseTableNodeViewController
 
-@property (nonatomic, assign) kBookListType booklist_type;
+- (instancetype)init UNAVAILABLE_ATTRIBUTE;
 
-@property (nonatomic, copy) NSString *id;
+- (instancetype)new UNAVAILABLE_ATTRIBUTE;
 
-@property (nonatomic, strong) NSArray *books;
-
-@property (nonatomic, copy) NSString *search;
+- (instancetype)initWithType:(kBookListType)booklist_type id:(NSString *)id;
 
 @end

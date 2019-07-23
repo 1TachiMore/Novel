@@ -23,109 +23,126 @@
 
 @property (nonatomic, strong) UILabel *timeLabel;
 
+@property (nonatomic, strong) UILabel *statusLabel;
+
 @end
 
 @implementation XXBookContentVC
+
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.view.backgroundColor = [UIColor clearColor];
-    
     //背景颜色的通知
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeBgColorWithNotifiction:) name:kNotificationWithChangeBg object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(dayAndNightBg:) name:kNotificationDayAndNightBg object:nil];
 }
+
 
 - (void)changeBgColorWithNotifiction:(NSNotification *)sender {
-    
-    NSUInteger index = [[sender userInfo][kNotificationWithChangeBg] integerValue];
-    
-    [self changeBgColorWithIndex:index];
-}
-
-- (void)dayAndNightBg:(NSNotification *)sender {
-    
-    NSUInteger index = [[sender userInfo][kNotificationDayAndNightBg] integerValue];
-    
-    [self changeBgColorWithIndex:index];
+    kBgColor bgoColor = [[sender userInfo][kNotificationWithChangeBg] integerValue];
+    [self changeBgColorWithIndex:bgoColor];
 }
 
 
 #pragma mark - 改变背景颜色
-/** 0-白色 1-黄色 2-淡绿色 3-淡黄色 4-淡紫色 */
-- (void)changeBgColorWithIndex:(NSUInteger)index {
+- (void)changeBgColorWithIndex:(kBgColor)bgoColor {
     
-    NSArray *imgs = @[@"day_mode_bg", @"yellow_mode_bg", @"green_mode_bg", @"sheepskin_mode_bg", @"pink_mode_bg", @"coffee_mode_bg"];
+    NSString *bgImageName;
+    switch (kReadingManager.bgColor) {
+        case kBgColor_default:
+            bgImageName = @"def_bg_375x667_";
+            break;
+        case kBgColor_ink:
+            bgImageName = @"ink_bg_375x667_";
+            break;
+        case kBgColor_flax:
+            bgImageName = @"flax_bg_375x667_";
+            break;
+        case kBgColor_green:
+            bgImageName = @"green_bg_375x667_";
+            break;
+        case kBgColor_peach:
+            bgImageName = @"peach_bg_375x667_";
+            break;
+        case kBgColor_Black:
+            bgImageName = @"coffee_mode_bg";
+            break;
+        default:
+            break;
+    }
     
-    UIImage *bgImage = [UIImage imageNamed:imgs[index]];
-    self.view.layer.contents = (__bridge id _Nullable)(bgImage.CGImage);
-    
-    [self changeOtherColor:index];
-    
-    self.batteryView.backgroundColor = [bgImage mostColor];
-    
-    [self.batteryView setNeedsDisplay];
-}
-
-- (void)changeOtherColor:(NSUInteger)index {
-    
-    if (kReadingManager.bgColor == 5) {
-        
+    if (kReadingManager.dayMode == kDayMode_night) {
+        UIColor *color = [[UIColor whiteColor] colorWithAlphaComponent:0.8];
         NSMutableAttributedString *text = (NSMutableAttributedString *)self.contentLabel.attributedText;
-        text.color = kwhiteColor;
-        
+        text.yy_color = color;
         self.contentLabel.attributedText = text;
         
-        self.titleLabel.textColor = kwhiteColor;
-        self.timeLabel.textColor = kwhiteColor;
-        self.pageLabel.textColor = kwhiteColor;
-        
+        self.titleLabel.textColor = color;
+        self.timeLabel.textColor = color;
+        self.pageLabel.textColor = color;
     } else {
         
         NSMutableAttributedString *text = (NSMutableAttributedString *)self.contentLabel.attributedText;
-        text.color = kblackColor;
-        
+        text.yy_color = kblackColor;
         self.contentLabel.attributedText = text;
         
         self.titleLabel.textColor = knormalColor;
         self.timeLabel.textColor = knormalColor;
         self.pageLabel.textColor = knormalColor;
     }
-}
-
-
-#pragma mark - get/set
-
-- (void)setBookModel:(BookChapterModel *)bookModel {
-    _bookModel = bookModel;
     
-    self.titleLabel.text = bookModel.title;
+    UIImage *bgImage = UIImageName(bgImageName);
+    self.view.layer.contents = (__bridge id _Nullable)(bgImage.CGImage);
+    
+    self.batteryView.backgroundColor = [bgImage mostColor];
+    [self.batteryView setNeedsDisplay];
 }
+
+
+#pragma mark - setter
+
+- (void)setBookModel:(XXBookChapterModel *)bookModel {
+    _bookModel = bookModel;
+    self.titleLabel.text = bookModel.title;
+    
+    if (bookModel.status == kbookBodyStatus_loading) {
+        self.contentLabel.hidden = YES;
+        self.statusLabel.text = @"加载中...";
+    }
+    else if (bookModel.status == kbookBodyStatus_error) {
+        self.contentLabel.hidden = YES;
+        self.statusLabel.text = bookModel.errorString;
+    }
+    else {
+        _statusLabel.hidden = YES;
+        self.contentLabel.hidden = NO;
+    }
+}
+
 
 - (void)setPage:(NSUInteger)page {
     _page = page;
-    
-    self.contentLabel.attributedText = [_bookModel getStringWithpage:page];
-    
+    self.contentLabel.attributedText = [kReadingManager getStringWithpage:page andChapter:_bookModel];
     self.timeLabel.text = [[DateTools shareDate] getTimeString];
-    
     self.pageLabel.text = [NSString stringWithFormat:@"%zd/%zd", page+1, _bookModel.pageCount];
-    
     [self changeBgColorWithIndex:kReadingManager.bgColor];
-    
-    [self changeOtherColor:kReadingManager.bgColor];
 }
+
+
+#pragma mark - getter
 
 - (UILabel *)titleLabel {
     if (!_titleLabel) {
-        _titleLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:13];
+        _titleLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(13)];
         [self.view addSubview:_titleLabel];
         
         [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.top.equalTo(self.view);
+            CGFloat top = 0;
+            if (xx_iPhoneX) {
+                top = kSafeAreaInsets.safeAreaInsets.top;
+            }
+            make.top.mas_equalTo(self.view.mas_top).offset(top);
             make.left.mas_equalTo(self.view.mas_left).offset(kReadSpaceX);
             make.right.mas_equalTo(self.view.mas_right).offset(-kReadSpaceX);
             make.height.mas_equalTo(kReadingTopH);
@@ -134,11 +151,27 @@
     return _titleLabel;
 }
 
+
+- (UILabel *)statusLabel {
+    if (!_statusLabel) {
+        _statusLabel = [UILabel newLabel:@"" andTextColor:kblackColor andFont:kFont_Zhong(16)];
+        _statusLabel.textAlignment = NSTextAlignmentCenter;
+        [self.view addSubview:_statusLabel];
+        
+        [_statusLabel mas_makeConstraints:^(MASConstraintMaker *make) {
+            make.top.mas_equalTo(self.titleLabel.mas_bottom).offset(44);
+            make.left.mas_equalTo(self.view.mas_left).offset(kReadSpaceX);
+            make.right.mas_equalTo(self.view.mas_right).offset(-kReadSpaceX);
+        }];
+    }
+    return _statusLabel;
+}
+
+
 - (YYLabel *)contentLabel {
     if (!_contentLabel) {
         _contentLabel = [[YYLabel alloc] init];
         _contentLabel.numberOfLines = 0;
-        _contentLabel.textAlignment = NSTextAlignmentCenter;
         [_contentLabel setTextVerticalAlignment:YYTextVerticalAlignmentTop];//居上对齐
         [self.view addSubview:_contentLabel];
         
@@ -152,13 +185,15 @@
     return _contentLabel;
 }
 
+
 - (UIView *)bottomView {
     if (!_bottomView) {
         _bottomView = [[UIView alloc] init];
         [self.view addSubview:_bottomView];
         
         [_bottomView mas_makeConstraints:^(MASConstraintMaker *make) {
-            make.bottom.left.right.equalTo(self.view);
+            make.left.right.equalTo(self.view);
+            make.bottom.mas_equalTo(self.view.mas_bottom).offset(-kSafeAreaInsets.safeAreaInsets.bottom);
             make.height.mas_equalTo(kReadingBottomH);
         }];
     }
@@ -175,7 +210,7 @@
         [_batteryView mas_makeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(self.bottomView);
             make.left.mas_equalTo(self.bottomView.mas_left).offset(kReadSpaceX);
-            make.size.mas_equalTo(CGSizeMake(xxAdaWidth(25), xxAdaWidth(10)));
+            make.size.mas_equalTo(CGSizeMake(AdaWidth(25), AdaWidth(10)));
         }];
     }
     return _batteryView;
@@ -183,12 +218,12 @@
 
 - (UILabel *)timeLabel {
     if (!_timeLabel) {
-        _timeLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:12];
+        _timeLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(12)];
         [self.bottomView addSubview:_timeLabel];
         
         [_timeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(self.batteryView);
-            make.left.mas_equalTo(self.batteryView.mas_right).offset(xxAdaWidth(8));
+            make.left.mas_equalTo(self.batteryView.mas_right).offset(AdaWidth(8));
         }];
         
     }
@@ -197,22 +232,24 @@
 
 - (UILabel *)pageLabel {
     if (!_pageLabel) {
-        _pageLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:12];
+        _pageLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(12)];
         _pageLabel.textAlignment = NSTextAlignmentRight;
         [self.bottomView addSubview:_pageLabel];
         
         [_pageLabel mas_makeConstraints:^(MASConstraintMaker *make) {
             make.centerY.equalTo(self.batteryView);
-            make.left.mas_equalTo(self.timeLabel.mas_right).offset(kCellX);
+            make.left.mas_equalTo(self.timeLabel.mas_right).offset(AdaWidth(12.f));
             make.right.mas_equalTo(self.bottomView.mas_right).offset(-kReadSpaceX);
         }];
     }
     return _pageLabel;
 }
 
+
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

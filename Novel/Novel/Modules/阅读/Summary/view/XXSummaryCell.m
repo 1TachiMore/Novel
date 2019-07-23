@@ -53,19 +53,19 @@
     _iconView.titleLabel.font = fontSize(14);
     [_container addSubview:_iconView];
     
-    _sourceLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:14];
+    _sourceLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(14)];
     [_container addSubview:_sourceLabel];
     
-    _timeLabel = [UILabel newLabel:@"" andTextColor:klightGrayColor andFontSize:12];
+    _timeLabel = [UILabel newLabel:@"" andTextColor:klightGrayColor andFont:fontSize(12)];
     [_container addSubview:_timeLabel];
     
-    _chapterLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:12];
+    _chapterLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(12)];
     [_container addSubview:_chapterLabel];
     
-    _currentLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFontSize:12];
+    _currentLabel = [UILabel newLabel:@"" andTextColor:kgrayColor andFont:fontSize(12)];
     [_container addSubview:_currentLabel];
     
-    _rightView = [[UIImageView alloc] initWithImage:UIImageWithName(@"cell_arrow_day")];
+    _rightView = [[UIImageView alloc] initWithImage:UIImageName(@"cell_arrow_day")];
     [self.contentView addSubview:_rightView];
     
     _line = [UIView newLine];
@@ -75,22 +75,22 @@
 
 - (void)setupLayout {
     
-    CGFloat topY = xxAdaWidth(20);
+    CGFloat topY = AdaWidth(20);
     
     [_container mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(self.contentView.mas_left).offset(kCellX);
-        make.right.mas_equalTo(_rightView.mas_left).offset(-kCellX);
+        make.left.mas_equalTo(self.contentView.mas_left).offset(AdaWidth(12.f));
+        make.right.mas_equalTo(_rightView.mas_left).offset(-AdaWidth(12.f));
         make.top.mas_equalTo(self.contentView.mas_top).offset(topY);
         make.bottom.mas_equalTo(_chapterLabel.mas_bottom);
     }];
     
     [_rightView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_container);
-        make.right.mas_equalTo(self.contentView.mas_right).offset(-kCellX);
+        make.right.mas_equalTo(self.contentView.mas_right).offset(-AdaWidth(12.f));
         make.size.mas_equalTo(_rightView.image.size);
     }];
     
-    CGSize iconSize = UIImageWithName(@"mode_juhe").size;
+    CGSize iconSize = UIImageName(@"mode_juhe").size;
     [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_container);
         make.left.mas_equalTo(_container.mas_left);
@@ -100,19 +100,19 @@
     
     [_sourceLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.equalTo(_container);
-        make.left.mas_equalTo(_iconView.mas_right).offset(xxAdaWidth(10));
+        make.left.mas_equalTo(_iconView.mas_right).offset(AdaWidth(10));
     }];
     
     [_timeLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_sourceLabel);
-        make.left.mas_equalTo(_sourceLabel.mas_right).offset(xxAdaWidth(4)).priorityHigh();
-        make.right.mas_equalTo(_currentLabel.mas_left).offset(-xxAdaWidth(5)).priorityLow();
+        make.left.mas_equalTo(_sourceLabel.mas_right).offset(AdaWidth(4)).priorityHigh();
+        make.right.mas_equalTo(_currentLabel.mas_left).offset(-AdaWidth(5)).priorityLow();
     }];
     
     [_chapterLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(_sourceLabel.mas_bottom).offset(xxAdaWidth(8));
+        make.top.mas_equalTo(_sourceLabel.mas_bottom).offset(AdaWidth(8));
         make.left.equalTo(_sourceLabel);
-        make.right.mas_equalTo(_currentLabel.mas_left).offset(-xxAdaWidth(5)).priorityLow();
+        make.right.mas_equalTo(_currentLabel.mas_left).offset(-AdaWidth(5)).priorityLow();
     }];
     
     [_currentLabel mas_makeConstraints:^(MASConstraintMaker *make) {
@@ -131,8 +131,8 @@
     [_chapterLabel setContentCompressionResistancePriority:UILayoutPriorityFittingSizeLevel/*宽度不够时，可以被压缩*/ forAxis:UILayoutConstraintAxisHorizontal];
     
     [_line mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(self.contentView.mas_left).offset(kCellX);
-        make.right.mas_equalTo(self.contentView.mas_right).offset(-kCellX);
+        make.left.mas_equalTo(self.contentView.mas_left).offset(AdaWidth(12.f));
+        make.right.mas_equalTo(self.contentView.mas_right).offset(-AdaWidth(12.f));
         make.height.mas_equalTo(klineHeight);
         make.top.mas_equalTo(_container.mas_bottom).offset(topY);
         make.bottom.mas_equalTo(self.contentView.mas_bottom);
@@ -150,7 +150,7 @@
         
         _sourceLabel.text = md.source;
         
-        _timeLabel.text = [[DateTools shareDate] getUpdateStringWith:[DateTools dateFromString:md.updated dateformatter:kCustomDateFormat]];
+        _timeLabel.text = [[DateTools shareDate] getUpdateStringWithDate:[DateTools dateFromString:md.updated dateformatter:kCustomDateFormat]];
         
         _chapterLabel.text = md.lastChapter;
         

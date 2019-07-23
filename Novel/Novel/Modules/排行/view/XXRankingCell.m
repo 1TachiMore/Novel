@@ -38,7 +38,7 @@
     _iconView = [[UIImageView alloc] init];
     [self.contentView addSubview:_iconView];
     
-    _titleLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:14];
+    _titleLabel = [UILabel newLabel:nil andTextColor:knormalColor andFont:kFont_Zhong(14)];
     [self.contentView addSubview:_titleLabel];
     
     _bottomLine = [UIView newLine];
@@ -48,20 +48,20 @@
 - (void)setupLayout {
     
     [_iconView mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.top.mas_equalTo(self.contentView.mas_top).offset(xxAdaWidth(10));
-        make.left.mas_equalTo(self.contentView.mas_left).offset(kCellX);
-        make.size.mas_equalTo(CGSizeMake(xxAdaWidth(30.0f), xxAdaWidth(30.0f)));
+        make.top.mas_equalTo(self.contentView.mas_top).offset(AdaWidth(10));
+        make.left.mas_equalTo(self.contentView.mas_left).offset(AdaWidth(12.f));
+        make.size.mas_equalTo(CGSizeMake(AdaWidth(30.0f), AdaWidth(30.0f)));
     }];
     
     [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
-        make.left.mas_equalTo(_iconView.mas_right).offset(xxAdaWidth(10));
-        make.right.mas_equalTo(self.contentView.mas_right).offset(-xxAdaWidth(10));
+        make.left.mas_equalTo(_iconView.mas_right).offset(AdaWidth(10));
+        make.right.mas_equalTo(self.contentView.mas_right).offset(-AdaWidth(10));
         make.centerY.equalTo(_iconView);
     }];
     
     [_bottomLine mas_makeConstraints:^(MASConstraintMaker *make) {
         make.bottom.mas_equalTo(self.contentView.mas_bottom);
-        make.top.mas_equalTo(_iconView.mas_bottom).offset(xxAdaWidth(10));
+        make.top.mas_equalTo(_iconView.mas_bottom).offset(AdaWidth(10));
         make.left.equalTo(_iconView);
         make.right.equalTo(self.contentView);
         make.height.mas_equalTo(klineHeight);
@@ -74,9 +74,9 @@
         RankingDeModel *md = model;
         
         if (md.cover && !md.collapse) {
-            [_iconView pin_setImageFromURL:NSURLwithString(md.cover) placeholderImage:UIImageWithName(@"default_book_cover")];
+            [_iconView sd_setImageWithURL:NSURLwithString(md.cover) placeholderImage:UIImageName(@"default_book_cover")];
         } else if (md.isMoreItem) {
-            _iconView.image = UIImageWithName(@"ranking_other");
+            _iconView.image = UIImageName(@"ranking_other");
         } else {
             _iconView.image = nil;
         }

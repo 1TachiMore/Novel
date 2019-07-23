@@ -6,7 +6,7 @@
 //  Copyright © 2018年 th. All rights reserved.
 //
 
-#define kLeftX xxAdaWidth(20)
+#define kLeftX AdaWidth(20)
 
 #import "XXDirectoryCell.h"
 
@@ -41,7 +41,7 @@
     _preView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"directory_not_previewed"]];
     [self.contentView addSubview:_preView];
 
-    _titleLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFontSize:12];
+    _titleLabel = [UILabel newLabel:@"" andTextColor:knormalColor andFont:fontSize(12)];
     [self.contentView addSubview:_titleLabel];
     
     _arrowView = [[UIImageView alloc] initWithImage:[UIImage imageNamed:@"cell_arrow_day"]];
@@ -53,7 +53,7 @@
 
 - (void)setupLayout {
     
-    CGFloat topInset = xxAdaWidth(15);
+    CGFloat topInset = AdaWidth(15);
     
     [_preView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.top.mas_equalTo(self.contentView.mas_top).offset(topInset);
@@ -62,7 +62,7 @@
     
     [_titleLabel mas_makeConstraints:^(MASConstraintMaker *make) {
         make.centerY.equalTo(_preView);
-        make.left.mas_equalTo(_preView.mas_right).offset(xxAdaWidth(10));
+        make.left.mas_equalTo(_preView.mas_right).offset(AdaWidth(10));
         make.right.mas_lessThanOrEqualTo(_arrowView.mas_left).offset(-topInset);
     }];
     
