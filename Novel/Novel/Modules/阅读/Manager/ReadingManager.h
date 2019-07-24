@@ -14,7 +14,7 @@
 #import "XXBookChapterModel.h"
 
 //小说内容据屏幕左右边的距离
-#define kReadSpaceX 20
+#define kReadSpaceX 15
 
 #define kReadingTopH 40
 

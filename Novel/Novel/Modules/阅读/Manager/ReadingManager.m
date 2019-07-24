@@ -217,10 +217,15 @@
     NSString __block *linkString = model.link;
     XXBookContentApi *api = [[XXBookContentApi alloc] initWithParameter:nil url:URL_bookContent(linkString)];
     [api startWithCompletionBlockWithSuccess:^(__kindof YTKBaseRequest * _Nonnull request) {
+        XXBookBodyModel *tempModel = [XXBookBodyModel yy_modelWithDictionary:request.responseObject[@"chapter"]];
         if ([linkString containsString:@"vip.zhuishushenqi.com"]) {
-            model.body = [kReadingManager adjustParagraphFormat:request.responseObject[@"chapter"][@"cpContent"]];
+            if (tempModel.isVip) {
+                model.body = tempModel.body;
+            } else {
+                model.body = tempModel.cpContent;
+            }
         } else {
-            model.body = [kReadingManager adjustParagraphFormat:request.responseObject[@"chapter"][@"body"]];
+            model.body = tempModel.body;
         }
         
         //存储章节
@@ -231,8 +236,7 @@
         
         if ([kDatabase insertBookBody:saveModel bookId:kReadingManager.bookId]) {
             NSLog(@"存储boyd成功");
-        }
-        else {
+        } else {
             NSLog(@"存储boyd失败");
         }
         

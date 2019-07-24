@@ -19,6 +19,8 @@
 /** 追书源章节内容 */
 @property (nonatomic, copy) NSString *cpContent;
 
+@property (nonatomic, assign) BOOL isVip;
+
 /** 章节链接 */
 @property (nonatomic, copy) NSString *link;
 
