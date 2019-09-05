@@ -286,14 +286,16 @@
         model.body = @"";
     }
     
-    NSMutableAttributedString *attr = [[NSMutableAttributedString alloc] initWithString:model.body];
+    NSString *body = [self adjustParagraphFormat:model.body];
+    
+    NSMutableAttributedString *attr = [[NSMutableAttributedString alloc] initWithString:body];
     attr.yy_font = font;
     attr.yy_color = kblackColor;
     
     // 设置label的行间距
     NSMutableParagraphStyle *paragraphStyle = [[NSMutableParagraphStyle alloc] init];
     [paragraphStyle setLineSpacing:AdaWidth(9)];
-    [attr addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, [model.body length])];
+    [attr addAttribute:NSParagraphStyleAttributeName value:paragraphStyle range:NSMakeRange(0, body.length)];
     
     CTFramesetterRef frameSetter = CTFramesetterCreateWithAttributedString((__bridge CFAttributedStringRef) attr);
     
@@ -368,7 +370,7 @@
         return nil;
     }
     string = [@"\t" stringByAppendingString:string];
-    //    string = [string stringByReplacingOccurrencesOfString:@"\n" withString:@"\n\t"];
+    string = [string stringByReplacingOccurrencesOfString:@"　　" withString:@""];
     string = [string stringByReplacingOccurrencesOfString:@"\n" withString:@"\n　　"];
     return string;
 }
