@@ -10,7 +10,7 @@
 * 章节缓存、记录阅读位置、换源
 * 阅读界面换肤、字体大小调整
 * 仿真、左右滑动和无效果三种翻页模式
-* 缓存使用了微信wcdb数据
+* 缓存使用了微信[wcdb](https://github.com/Tencent/wcdb)数据库
 
 ![](http://ww4.sinaimg.cn/large/006tNc79gy1g59ok32cecj30hs0vkwir.jpg)
 
